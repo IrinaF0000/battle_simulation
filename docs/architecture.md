@@ -15,22 +15,25 @@ This project is a C++20 turn-based battle simulation with a domain-neutral ECS/e
 ```text
 text commands
   -> App scenario runner
+  -> feature-pack runtime assembly
   -> IO command handlers
   -> BattleSimulationFacade
+  -> EngineRunner / Scheduler
   -> Features/Battle systems
   -> Core ECS/resources/registries/mutations/event bus
   -> battle events
-  -> legacy output adapter
+  -> legacy output adapter and optional JSON trace
 ```
 
 ## Boundary direction
 
-```text
-App -> IO/LegacyCommands
-App -> Features/*
-IO/LegacyCommands -> Features/Battle + Core event sink interface
-Features/* -> Core
-Core -> no feature modules
+```mermaid
+flowchart TD
+    App["App\ncomposition, config, CLI"] --> IO["IO/LegacyCommands\ntext commands, legacy output"]
+    App --> Features["Features/*\ngameplay modules"]
+    IO --> Battle["Features/Battle\nfacade and battle DTOs"]
+    Battle --> Core["Core\nECS, resources, scheduler, registries"]
+    Features --> Core
 ```
 
 `Core` provides reusable infrastructure. Gameplay headers and concepts are owned by feature modules:
@@ -40,7 +43,9 @@ Core -> no feature modules
 - battle map and movement rules are in `Features/Battle/Resources`, `Policies`, and `Systems`;
 - battle entity recipes and archetypes are in `Features/Battle` and `Features/UnitsClassic`.
 
-The CLI keeps the old text command syntax and `UNIT_*` output format as an IO compatibility surface. Runtime gameplay uses feature-owned Battle systems over the generic Core infrastructure.
+The CLI keeps the legacy text command syntax and `UNIT_*` output format as an IO compatibility surface. Runtime gameplay uses feature-owned Battle systems over the generic Core infrastructure.
+
+The architecture boundary checker in `scripts/check_architecture_boundaries.py` enforces the main include rules in CI.
 
 ## Related docs
 
@@ -49,5 +54,6 @@ The CLI keeps the old text command syntax and `UNIT_*` output format as an IO co
 - `docs/system-order.md`
 - `docs/configuration.md`
 - `docs/data-driven-archetypes.md`
+- `docs/json-trace.md`
 - `docs/performance-notes.md`
 - `examples/add-new-mechanic.md`

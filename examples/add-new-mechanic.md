@@ -1,6 +1,6 @@
 # Add a New Mechanic
 
-M5 proves that a small mechanic can be added without changing `Core`.
+This example shows how a small unit mechanic can be added without changing `Core`.
 
 The example mechanic is `Lancer`, a classic unit archetype that can strike an attackable target exactly two cells away, fall back to adjacent melee, and move if no attack rule can progress.
 
@@ -34,3 +34,12 @@ distance: exactly 2
 ```
 
 That keeps the extension inside feature-owned code while reusing the generic action-rule pipeline.
+
+## Deterministic Check
+
+```bash
+./build/battle_sim commands_example.txt
+ctest --test-dir build --output-on-failure
+```
+
+For a data-driven version of the same idea, see `config/archetypes/spearman.json`.

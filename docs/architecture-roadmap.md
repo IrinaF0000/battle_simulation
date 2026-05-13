@@ -51,9 +51,17 @@ The publication-oriented roadmap was completed in small, buildable milestones. T
 - Optional debug output.
 - Performance notes.
 
+### M9. Runtime and tooling polish
+
+- Runtime composition driven by config-selected feature packs.
+- Battle runtime uses `EngineRunner` and scheduler phases.
+- Optional JSON trace output and `inspect` summary command.
+- Architecture boundary checker and CMake presets.
+- JSON archetype rule-array example.
+
 ## Optional future work
 
-- Broaden data-driven action graphs beyond the minimal archetype slice.
+- Broaden data-driven rule validation and diagnostics while keeping JSON non-scripted.
 - Add focused micro-benchmarks for scheduler/rule execution.
 - Add richer scenario inspection tools without introducing UI/graphics scope.
 

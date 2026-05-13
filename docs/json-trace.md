@@ -15,6 +15,27 @@ Trace summary:
 
 The trace is a JSON array. Each record contains `tick`, `event`, and event-specific fields.
 
+Small trace excerpt:
+
+```json
+[
+  {
+    "tick": 1,
+    "event": "MAP_CREATED",
+    "width": 8,
+    "height": 5
+  },
+  {
+    "tick": 1,
+    "event": "UNIT_SPAWNED",
+    "unitId": 1,
+    "unitType": "Swordsman",
+    "x": 0,
+    "y": 2
+  }
+]
+```
+
 Current event names:
 
 - `MAP_CREATED`

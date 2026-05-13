@@ -1,6 +1,6 @@
 # Agent Seeds
 
-Reusable templates for optional AI-agent assisted work.
+Reusable templates for optional AI-agent assisted work and seeds for future projects.
 
 These templates are intentionally kept under `docs/agent-seeds/` so the repository root stays clean. If you use active control files locally, either keep them uncommitted or move the final, stable process notes into `docs/agent-workflow.md`.
 

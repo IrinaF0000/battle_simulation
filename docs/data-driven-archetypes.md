@@ -1,6 +1,6 @@
 # Data-Driven Archetypes
 
-M7 adds a minimal JSON-defined archetype slice.
+The project supports a small JSON-defined archetype slice for deterministic gameplay experiments.
 
 The current slice is intentionally small:
 
@@ -45,6 +45,12 @@ The scenario can then use:
 SPAWN Duelist 1 0 0
 ```
 
+Rule-array example:
+
+```bash
+./build/battle_sim commands_example.txt config/data-driven-spearman.cfg
+```
+
 ## Schema
 
 Supported fields:
@@ -72,7 +78,7 @@ Supported `actionTemplate` values:
 | `adjacent-striker` | Swordsman-like adjacent strength attack, then move. |
 | `lancer-reach` | Lancer-like reach attack, adjacent fallback, then move. |
 
-## Current Limits
+## Limits
 
 Rule arrays support existing registered handler ids only. They do not evaluate expressions, run scripts, or define new handlers.
 

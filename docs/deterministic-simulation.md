@@ -8,7 +8,7 @@ Deterministic validation treats a scenario as an ordered text-command input and 
 - A fixed RNG seed must be supplied by the app or test harness when a scenario can choose between equivalent targets or movement cells.
 - Command syntax stays compatible with existing legacy scenario files.
 
-The current CLI keeps the historical command-file interface. Tests use `battle_sim::app::RunOptions::rngSeed` to make replay checks reproducible without adding config scope before M6.
+The current CLI keeps the historical command-file interface. Tests use `battle_sim::app::RunOptions::rngSeed` and config-level `rngSeed` to make replay checks reproducible.
 
 ## Outputs
 

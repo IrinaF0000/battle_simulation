@@ -34,9 +34,9 @@ Additional checks before publication:
 
 ```bash
 find . \( -path './build*' -o -name '*.exe' -o -name '*.a' -o -name 'CMakeCache.txt' -o -name 'build.ninja' \) -print
-grep -RInE "old-company-name|old-assignment-marker|private-note-marker" . --exclude-dir=.git --exclude-dir=build --exclude-dir=build-mingw
+grep -RInE "internal-marker|unpublished-note|local-only" . --exclude-dir=.git --exclude-dir=build --exclude-dir=build-mingw
 ```
 
 ## Agent workflow notes
 
-Reusable prompts and role boundaries are documented in `docs/agent-workflow.md`. Prompt templates are in `docs/agent-seeds/`.
+Role boundaries and review gates are documented in `docs/agent-workflow.md`.
