@@ -15,6 +15,8 @@ This file describes the optional AI-agent workflow used while developing this re
 - Keep changes task-scoped and easy to review.
 - Preserve command syntax and `UNIT_*` compatibility output unless a task explicitly changes it.
 - Describe agents as support tools; humans own design, review, and validation.
+- Do not write C-style casts. Remove unnecessary casts; otherwise use explicit C++ casts.
+- Avoid known C++/OOP antipatterns: raw owning pointers, hidden global state, god objects, inheritance for code reuse, needless downcasts, macro-driven logic, and exceptions as normal control flow.
 
 ## Roles
 

@@ -59,6 +59,6 @@ namespace battle_sim::features::battle
 
 	void BattleSimulationFacade::run()
 	{
-		(void)BattleTurnSystem::run(_game);
+		BattleTurnSystem::run(_game);
 	}
 }

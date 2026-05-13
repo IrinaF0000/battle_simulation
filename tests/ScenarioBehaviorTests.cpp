@@ -404,7 +404,7 @@ namespace
 
 		try
 		{
-			(void)battle_sim::app::runOptionsFromConfig(battle_sim::app::parseGameConfig(configText));
+			battle_sim::app::runOptionsFromConfig(battle_sim::app::parseGameConfig(configText));
 		}
 		catch (const std::runtime_error& ex)
 		{
@@ -528,7 +528,7 @@ namespace
 	{
 		try
 		{
-			(void)runScenarioText(
+			runScenarioText(
 				"CREATE_MAP 2 2\n"
 				"WAIT\n");
 		}

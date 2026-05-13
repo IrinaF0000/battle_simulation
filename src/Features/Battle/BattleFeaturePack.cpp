@@ -18,7 +18,7 @@ namespace battle_sim::features::battle
 
 	void BattleFeaturePack::registerFeature(core::engine::GameContext& context, const core::config::FeatureConfig&)
 	{
-		(void)battlePolicies(context);
+		battlePolicies(context);
 		registerBattleValueResolvers(context.registries);
 		registerBattleConditionHandlers(context.registries);
 		registerBattleTargetSelectors(context.registries);

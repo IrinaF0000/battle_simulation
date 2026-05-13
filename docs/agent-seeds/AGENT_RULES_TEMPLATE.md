@@ -22,6 +22,11 @@ Use search before opening large files.
 - Put domain behavior in the owning module.
 - Do not add cross-module dependencies unless allowed.
 
+## C++ quality
+
+- Do not write C-style casts. Remove unnecessary casts; otherwise use explicit C++ casts.
+- Avoid known C++/OOP antipatterns: raw owning pointers, hidden global state, god objects, inheritance for code reuse, needless downcasts, macro-driven logic, and exceptions as normal control flow.
+
 ## Scope
 
 - One task at a time.
