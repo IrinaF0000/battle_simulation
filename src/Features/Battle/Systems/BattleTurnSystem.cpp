@@ -93,12 +93,7 @@ namespace battle_sim::features::battle
 			{
 				return;
 			}
-			targets.erase(
-				std::remove_if(
-					targets.begin(),
-					targets.end(),
-					[&](core::EntityId target) { return !isAttackable(world, target); }),
-				targets.end());
+			std::erase_if(targets, [&](core::EntityId target) { return !isAttackable(world, target); });
 		}
 
 		bool applyEffect(

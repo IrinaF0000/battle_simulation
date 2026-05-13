@@ -28,7 +28,7 @@ namespace battle_sim::core::ecs
 	public:
 		bool has(EntityId id) const
 		{
-			return _components.find(id) != _components.end();
+			return _components.contains(id);
 		}
 
 		T* get(EntityId id)

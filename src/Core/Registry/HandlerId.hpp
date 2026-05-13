@@ -37,15 +37,7 @@ namespace battle_sim::core::registry
 			return _value;
 		}
 
-		friend bool operator==(const HandlerId& lhs, const HandlerId& rhs)
-		{
-			return lhs._value == rhs._value;
-		}
-
-		friend bool operator!=(const HandlerId& lhs, const HandlerId& rhs)
-		{
-			return !(lhs == rhs);
-		}
+		bool operator==(const HandlerId&) const = default;
 
 	private:
 		static bool isValid(std::string_view value)

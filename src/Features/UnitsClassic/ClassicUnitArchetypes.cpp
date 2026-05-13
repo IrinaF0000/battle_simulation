@@ -9,36 +9,66 @@ namespace battle_sim::features::units_classic
 	{
 		registry.registerArchetype(
 			"Swordsman",
-			features::battle::EntityArchetype{true, true, true, core::ecs::ActionBudgetComponent{1}, makeSwordsmanActionRules()});
+			features::battle::EntityArchetype{
+				.mobile = true,
+				.occupiesCell = true,
+				.attackable = true,
+				.actionBudget = core::ecs::ActionBudgetComponent{.pointsPerTurn = 1},
+				.actionRules = makeSwordsmanActionRules()});
 		registry.registerArchetype(
 			"Lancer",
-			features::battle::EntityArchetype{true, true, true, core::ecs::ActionBudgetComponent{1}, makeLancerActionRules()});
+			features::battle::EntityArchetype{
+				.mobile = true,
+				.occupiesCell = true,
+				.attackable = true,
+				.actionBudget = core::ecs::ActionBudgetComponent{.pointsPerTurn = 1},
+				.actionRules = makeLancerActionRules()});
 		registry.registerArchetype(
 			"Hunter",
-			features::battle::EntityArchetype{true, true, true, core::ecs::ActionBudgetComponent{1}, makeHunterActionRules()});
+			features::battle::EntityArchetype{
+				.mobile = true,
+				.occupiesCell = true,
+				.attackable = true,
+				.actionBudget = core::ecs::ActionBudgetComponent{.pointsPerTurn = 1},
+				.actionRules = makeHunterActionRules()});
 		registry.registerArchetype(
 			"Tower",
-			features::battle::EntityArchetype{false, true, true, core::ecs::ActionBudgetComponent{1}, makeTowerActionRules()});
+			features::battle::EntityArchetype{
+				.mobile = false,
+				.occupiesCell = true,
+				.attackable = true,
+				.actionBudget = core::ecs::ActionBudgetComponent{.pointsPerTurn = 1},
+				.actionRules = makeTowerActionRules()});
 		registry.registerArchetype(
 			"Raven",
-			features::battle::EntityArchetype{true, false, true, core::ecs::ActionBudgetComponent{1}, makeRavenActionRules()});
+			features::battle::EntityArchetype{
+				.mobile = true,
+				.occupiesCell = false,
+				.attackable = true,
+				.actionBudget = core::ecs::ActionBudgetComponent{.pointsPerTurn = 1},
+				.actionRules = makeRavenActionRules()});
 		registry.registerArchetype(
 			"Healer",
-			features::battle::EntityArchetype{true, true, true, core::ecs::ActionBudgetComponent{1}, makeHealerActionRules()});
+			features::battle::EntityArchetype{
+				.mobile = true,
+				.occupiesCell = true,
+				.attackable = true,
+				.actionBudget = core::ecs::ActionBudgetComponent{.pointsPerTurn = 1},
+				.actionRules = makeHealerActionRules()});
 		registry.registerArchetype(
 			"Mine",
 			features::battle::EntityArchetype{
-				false,
-				false,
-				false,
-				core::ecs::ActionBudgetComponent{1},
-				makeMineActionRules(),
-				features::battle::StatComponents{
-					features::battle::HealthComponent{1},
-					features::battle::StrengthComponent{},
-					features::battle::AgilityComponent{},
-					features::battle::RangeComponent{},
-					features::battle::SpiritComponent{},
-					features::battle::PowerComponent{}}});
+				.mobile = false,
+				.occupiesCell = false,
+				.attackable = false,
+				.actionBudget = core::ecs::ActionBudgetComponent{.pointsPerTurn = 1},
+				.actionRules = makeMineActionRules(),
+				.baseStatComponents = features::battle::StatComponents{
+					.health = features::battle::HealthComponent{.hp = 1},
+					.strength = features::battle::StrengthComponent{},
+					.agility = features::battle::AgilityComponent{},
+					.range = features::battle::RangeComponent{},
+					.spirit = features::battle::SpiritComponent{},
+					.power = features::battle::PowerComponent{}}});
 	}
 }

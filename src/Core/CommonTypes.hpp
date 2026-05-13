@@ -18,9 +18,6 @@ namespace battle_sim::core
 		int x{};
 		int y{};
 
-		bool operator==(const Position& p) const
-		{
-			return x == p.x && y == p.y;
-		}
+		bool operator==(const Position&) const = default;
 	};
 }

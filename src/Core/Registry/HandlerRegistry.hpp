@@ -37,7 +37,7 @@ namespace battle_sim::core::registry
 
 		bool contains(const HandlerId& id) const
 		{
-			return _handlers.find(id) != _handlers.end();
+			return _handlers.contains(id);
 		}
 
 		bool contains(std::string id) const

@@ -35,7 +35,7 @@ namespace battle_sim::features::battle
 
 	bool BattleMapResource::isOccupied(core::Position position) const
 	{
-		return _occupancy.find(key(position)) != _occupancy.end();
+		return _occupancy.contains(key(position));
 	}
 
 	std::optional<core::EntityId> BattleMapResource::entityAt(core::Position position) const

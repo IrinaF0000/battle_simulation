@@ -26,7 +26,7 @@ namespace battle_sim::core::engine
 		template <class T>
 		bool contains() const
 		{
-			return _resources.find(std::type_index(typeid(T))) != _resources.end();
+			return _resources.contains(std::type_index(typeid(T)));
 		}
 
 		template <class T>

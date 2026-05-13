@@ -30,13 +30,13 @@ namespace battle_sim::features::battle
 	{
 		const auto& archetype = get(id);
 		return EntityRecipe{
-			entityId,
-			pos,
-			stats,
-			archetype.mobile,
-			archetype.occupiesCell,
-			archetype.attackable,
-			archetype.actionBudget,
-			archetype.actionRules};
+			.id = entityId,
+			.position = pos,
+			.stats = stats,
+			.mobile = archetype.mobile,
+			.blocksCell = archetype.occupiesCell,
+			.attackable = archetype.attackable,
+			.actionBudget = archetype.actionBudget,
+			.actionRules = archetype.actionRules};
 	}
 }

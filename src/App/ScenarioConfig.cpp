@@ -83,9 +83,9 @@ namespace battle_sim::app
 	core::config::GameConfig defaultGameConfig()
 	{
 		core::config::GameConfig config;
-		config.features.push_back(core::config::FeatureConfig{"battle.basic", true, {}});
-		config.features.push_back(core::config::FeatureConfig{"units.classic", true, {}});
-		config.features.push_back(core::config::FeatureConfig{"io.legacy", true, {}});
+		config.features.push_back(core::config::FeatureConfig{.id = "battle.basic", .enabled = true, .flatSettings = {}});
+		config.features.push_back(core::config::FeatureConfig{.id = "units.classic", .enabled = true, .flatSettings = {}});
+		config.features.push_back(core::config::FeatureConfig{.id = "io.legacy", .enabled = true, .flatSettings = {}});
 		return config;
 	}
 

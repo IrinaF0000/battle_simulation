@@ -47,12 +47,9 @@ namespace battle_sim::features::battle
 		for (int step = 0; step < stepDistance; ++step)
 		{
 			auto candidates = map.neighbors8(current);
-			candidates.erase(
-				std::remove_if(
-					candidates.begin(),
-					candidates.end(),
-					[&](core::Position candidate) { return !canEnterCell(policies, map, from, candidate, occupiesCell); }),
-				candidates.end());
+			std::erase_if(
+				candidates,
+				[&](core::Position candidate) { return !canEnterCell(policies, map, from, candidate, occupiesCell); });
 
 			if (candidates.empty())
 			{

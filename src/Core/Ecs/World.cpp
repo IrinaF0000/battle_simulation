@@ -21,7 +21,7 @@ namespace battle_sim::core::ecs
 
 	EntityId World::createEntity()
 	{
-		while (_nextId == InvalidEntityId || _entityOrder.find(_nextId) != _entityOrder.end())
+		while (_nextId == InvalidEntityId || _entityOrder.contains(_nextId))
 		{
 			++_nextId;
 		}
@@ -33,7 +33,7 @@ namespace battle_sim::core::ecs
 
 	bool World::createEntity(EntityId id)
 	{
-		if (id == InvalidEntityId || _entityOrder.find(id) != _entityOrder.end())
+		if (id == InvalidEntityId || _entityOrder.contains(id))
 		{
 			return false;
 		}
@@ -51,7 +51,7 @@ namespace battle_sim::core::ecs
 
 	bool World::exists(EntityId id) const
 	{
-		return _activeEntities.find(id) != _activeEntities.end();
+		return _activeEntities.contains(id);
 	}
 
 	bool World::removeEntity(EntityId id)

@@ -46,9 +46,9 @@ namespace battle_sim::core::engine
 		_context.scheduler.runPhase(Phase::Shutdown);
 
 		return EngineRunResult{
-			ticksExecuted,
-			_stopRequested,
-			!_stopRequested && ticksExecuted >= maxTicks};
+			.ticksExecuted = ticksExecuted,
+			.stopRequested = _stopRequested,
+			.reachedMaxTicks = !_stopRequested && ticksExecuted >= maxTicks};
 	}
 
 	void EngineRunner::requestStop()
