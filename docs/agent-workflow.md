@@ -92,6 +92,10 @@ Review should cover:
 - generated artifacts and local files;
 - clarity of documentation updates.
 
+Example case study:
+
+- `docs/case-studies/add-json-trace-agent-run.md`
+
 ## Commit rules
 
 Agents may create commits only after the assigned task is complete and verified.

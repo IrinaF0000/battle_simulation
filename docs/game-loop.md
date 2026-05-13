@@ -21,11 +21,11 @@ Command parsing is a setup phase. Each command is handled immediately:
 - `SPAWN_*` and generic `SPAWN` create battle entity recipes, place blocking entities on the battle map, attach feature-owned ECS components, and emit `UNIT_SPAWNED` at tick `1`.
 - `MARCH` validates the target, stores a feature-owned march target component, and emits `MARCH_STARTED` at tick `1`.
 
-After the file is parsed, `BattleSimulationFacade::run` delegates to `Features/Battle::BattleTurnSystem`.
+After the file is parsed, `BattleSimulationFacade::run` runs `core::engine::EngineRunner` over the systems registered by the active feature packs.
 
 ## Battle Turn Loop
 
-`BattleTurnSystem` starts gameplay ticks at `2`. It returns immediately if no battle map resource exists.
+The battle feature pack registers scheduled systems that start gameplay ticks at `2`. The scheduler stops immediately if no battle map resource exists.
 
 Each tick:
 
@@ -46,7 +46,7 @@ The action budget is reduced by each successful rule cost. The entity stops acti
 
 ## Scheduled Engine Path
 
-The generic engine path is represented by `core::engine::EngineRunner` and `Scheduler`.
+The generic engine path is represented by `core::engine::EngineRunner` and `Scheduler`. It is the CLI battle runtime path.
 
 The scheduled loop runs:
 
@@ -61,7 +61,7 @@ while not stopped and below maxTicks:
 Shutdown once
 ```
 
-Systems within a phase run in registration order. `EngineRunner::requestStop` can stop the loop between phases.
+Systems within a phase run in registration order. A scheduled system can request a stop by returning `true`; `EngineRunner` stops between phases.
 
 ## Stable IO Surface
 

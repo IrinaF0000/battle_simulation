@@ -1,6 +1,7 @@
 // Tests for feature-owned battle action execution.
 
 #include "Core/Ecs/ActionRules.hpp"
+#include "Core/Engine/EngineRunner.hpp"
 #include "Core/Engine/GameContext.hpp"
 #include "Core/Registry/CoreHandlers.hpp"
 #include "Features/Battle/ActionRuleParams.hpp"
@@ -119,6 +120,23 @@ namespace
 			game.world.components<PositionComponent>().get(1)->value == battle_sim::core::Position{1, 0},
 			"Expected movement toward march target");
 	}
+
+	void schedulerPathRunsBattleTick()
+	{
+		auto game = makeBattleContext();
+		require(
+			battle_sim::features::battle::BattleSpawnSystem::spawn(unit(1, {0, 0}, 10, 3, {adjacentDamageRule()}), game, 1),
+			"Expected attacker spawn");
+		require(
+			battle_sim::features::battle::BattleSpawnSystem::spawn(unit(2, {1, 0}, 3, 1, {}), game, 1),
+			"Expected target spawn");
+
+		const auto result = battle_sim::core::engine::EngineRunner{game}.run();
+
+		require(result.ticksExecuted == 1, "Expected scheduler to execute one battle tick");
+		require(!game.world.components<HealthComponent>().has(2), "Expected scheduler cleanup to remove target health");
+		require(!game.world.exists(2), "Expected scheduler cleanup to remove dead target");
+	}
 }
 
 int main()
@@ -126,6 +144,7 @@ int main()
 	const std::vector<std::pair<std::string, void (*)()>> tests{
 		{"adjacentDamageIsExecutedByBattleTurnSystem", adjacentDamageIsExecutedByBattleTurnSystem},
 		{"movementUsesBattleMarchTargetComponent", movementUsesBattleMarchTargetComponent},
+		{"schedulerPathRunsBattleTick", schedulerPathRunsBattleTick},
 	};
 
 	for (const auto& [name, test] : tests)

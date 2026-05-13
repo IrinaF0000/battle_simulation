@@ -9,8 +9,10 @@ option(BATTLE_SIM_WARNINGS_AS_ERRORS "Treat compiler warnings as errors" OFF)
 
 set(BATTLE_SIM_SOURCES
     src/App/RegisterBuiltInFeaturePacks.cpp
+    src/App/RuntimeAssembly.cpp
     src/App/ScenarioConfig.cpp
     src/App/ScenarioRunner.cpp
+    src/App/TraceInspector.cpp
     src/Core/Ecs/World.cpp
     src/Core/Engine/EngineRunner.cpp
     src/Core/Engine/Mutation.cpp
@@ -43,6 +45,7 @@ set(BATTLE_SIM_SOURCES
     src/IO/LegacyCommands/LegacyEventAdapter.cpp
     src/IO/LegacyCommands/LegacyIoFeaturePack.cpp
     src/IO/LegacyCommands/RegisterLegacyCommands.cpp
+    src/IO/Trace/JsonTraceWriter.cpp
 )
 
 add_library(battle_sim_lib ${BATTLE_SIM_SOURCES})

@@ -2,6 +2,12 @@
 
 #include "App/ScenarioConfig.hpp"
 #include "App/ScenarioRunner.hpp"
+#include "App/TraceInspector.hpp"
+#include "Core/Engine/GameContext.hpp"
+#include "Core/Registry/CoreHandlers.hpp"
+#include "Features/Battle/BattleFeaturePack.hpp"
+#include "Features/Battle/EntityArchetypeRegistry.hpp"
+#include "Features/UnitsClassic/DataDrivenArchetypes.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -46,6 +52,14 @@ namespace
 		if (text.find(expected) == std::string::npos)
 		{
 			throw std::runtime_error("Expected output to contain: " + expected + "\nActual output:\n" + text);
+		}
+	}
+
+	void requireEqual(const std::string& actual, const std::string& expected, const std::string& label)
+	{
+		if (actual != expected)
+		{
+			throw std::runtime_error("Expected " + label + " to match.\nExpected:\n" + expected + "\nActual:\n" + actual);
 		}
 	}
 
@@ -201,6 +215,17 @@ namespace
 			"MARCH 1 2 0\n");
 
 		requireContains(output, "[2] UNIT_MOVED unitId=1 x=2 y=0");
+	}
+
+	void marchEndedReportsFinalPosition()
+	{
+		const auto output = runScenarioText(
+			"CREATE_MAP 5 1\n"
+			"SPAWN_RAVEN 1 0 0 10 2\n"
+			"SPAWN_MINE 2 4 0 5\n"
+			"MARCH 1 2 0\n");
+
+		requireContains(output, "[2] MARCH_ENDED unitId=1 x=2 y=0");
 	}
 
 	void ravenAllowsBlockingEntityOnSameCell()
@@ -415,6 +440,26 @@ namespace
 		throw std::runtime_error("Expected unknown feature pack to be rejected");
 	}
 
+	void configRejectsDisabledRequiredFeature()
+	{
+		std::istringstream configText(
+			"feature battle.basic\n"
+			"feature units.classic enabled=false\n"
+			"feature io.legacy\n");
+
+		try
+		{
+			battle_sim::app::runOptionsFromConfig(battle_sim::app::parseGameConfig(configText));
+		}
+		catch (const std::runtime_error& ex)
+		{
+			requireContains(ex.what(), "Required feature disabled or missing: units.classic");
+			return;
+		}
+
+		throw std::runtime_error("Expected disabled required feature pack to be rejected");
+	}
+
 	void dataDrivenArchetypeLoadsFromConfig()
 	{
 		std::istringstream configText(
@@ -434,6 +479,57 @@ namespace
 		requireContains(output, "[2] UNIT_ATTACKED attackerUnitId=1 targetUnitId=2 damage=2 targetHp=1");
 	}
 
+	void jsonRuleArrayDefinesSpearman()
+	{
+		std::istringstream configText(
+			"feature battle.basic\n"
+			"feature units.classic\n"
+			"feature io.legacy\n"
+			"archetypeFile config/archetypes/spearman.json\n");
+		const auto options = battle_sim::app::runOptionsFromConfig(battle_sim::app::parseGameConfig(configText));
+
+		const auto output = runScenarioText(
+			"CREATE_MAP 3 1\n"
+			"SPAWN Spearman 1 0 0\n"
+			"SPAWN Tower 2 2 0 hp=5 power=1\n",
+			options);
+
+		requireContains(output, "[1] UNIT_SPAWNED unitId=1 unitType=Spearman x=0 y=0");
+		requireContains(output, "[2] UNIT_ATTACKED attackerUnitId=1 targetUnitId=2 damage=2 targetHp=3");
+		requireNotContains(output, "UNIT_MOVED unitId=1");
+	}
+
+	void jsonRuleArrayRejectsUnknownHandler()
+	{
+		battle_sim::core::engine::GameContext game;
+		battle_sim::core::registry::registerCoreHandlers(game.registries);
+		battle_sim::features::battle::BattleFeaturePack{}.registerFeature(
+			game,
+			battle_sim::core::config::FeatureConfig{});
+		battle_sim::features::battle::EntityArchetypeRegistry registry;
+		std::istringstream json(
+			"{\n"
+			"  \"schemaVersion\": 1,\n"
+			"  \"id\": \"Broken\",\n"
+			"  \"hp\": 1,\n"
+			"  \"rules\": [\n"
+			"    {\"effect\": \"battle.missing\"}\n"
+			"  ]\n"
+			"}\n");
+
+		try
+		{
+			battle_sim::features::units_classic::registerDataDrivenArchetypeJson(registry, game.registries, json);
+		}
+		catch (const std::runtime_error& ex)
+		{
+			requireContains(ex.what(), "Unknown action rule handler: battle.missing");
+			return;
+		}
+
+		throw std::runtime_error("Expected unknown rule handler to be rejected");
+	}
+
 	void debugSummaryUsesStderrOnly()
 	{
 		std::istringstream configText(
@@ -449,6 +545,112 @@ namespace
 		requireContains(captured.output, "[1] MAP_CREATED width=1 height=1");
 		requireNotContains(captured.output, "[debug]");
 		requireContains(captured.error, "[debug] scenario.complete rngSeed=random archetypeFiles=0");
+	}
+
+	void jsonTraceCapturesDeterministicEvents()
+	{
+		std::ostringstream trace;
+		battle_sim::app::RunOptions options;
+		options.traceJsonOutput = &trace;
+
+		const auto output = runScenarioText(
+			"CREATE_MAP 2 1\n"
+			"SPAWN_SWORDSMAN 1 0 0 5 3\n"
+			"SPAWN_SWORDSMAN 2 1 0 3 1\n",
+			options);
+
+		requireContains(output, "[2] UNIT_ATTACKED attackerUnitId=1 targetUnitId=2 damage=3 targetHp=0");
+		requireEqual(
+			trace.str(),
+			"[\n"
+			"  {\n"
+			"    \"tick\": 1,\n"
+			"    \"event\": \"MAP_CREATED\",\n"
+			"    \"width\": 2,\n"
+			"    \"height\": 1\n"
+			"  },\n"
+			"  {\n"
+			"    \"tick\": 1,\n"
+			"    \"event\": \"UNIT_SPAWNED\",\n"
+			"    \"unitId\": 1,\n"
+			"    \"unitType\": \"Swordsman\",\n"
+			"    \"x\": 0,\n"
+			"    \"y\": 0\n"
+			"  },\n"
+			"  {\n"
+			"    \"tick\": 1,\n"
+			"    \"event\": \"UNIT_SPAWNED\",\n"
+			"    \"unitId\": 2,\n"
+			"    \"unitType\": \"Swordsman\",\n"
+			"    \"x\": 1,\n"
+			"    \"y\": 0\n"
+			"  },\n"
+			"  {\n"
+			"    \"tick\": 2,\n"
+			"    \"event\": \"UNIT_ATTACKED\",\n"
+			"    \"sourceUnitId\": 1,\n"
+			"    \"targetUnitId\": 2,\n"
+			"    \"amount\": 3,\n"
+			"    \"resultingValue\": 0\n"
+			"  },\n"
+			"  {\n"
+			"    \"tick\": 2,\n"
+			"    \"event\": \"UNIT_DIED\",\n"
+			"    \"unitId\": 2\n"
+			"  },\n"
+			"  {\n"
+			"    \"tick\": 2,\n"
+			"    \"event\": \"UNIT_ATTACKED\",\n"
+			"    \"sourceUnitId\": 2,\n"
+			"    \"targetUnitId\": 1,\n"
+			"    \"amount\": 1,\n"
+			"    \"resultingValue\": 4\n"
+			"  }\n"
+			"]\n",
+			"JSON trace");
+	}
+
+	void traceInspectorPrintsSummary()
+	{
+		std::istringstream trace(
+			"[\n"
+			"  {\"tick\": 1, \"event\": \"MAP_CREATED\", \"width\": 2, \"height\": 1},\n"
+			"  {\"tick\": 1, \"event\": \"UNIT_SPAWNED\", \"unitId\": 1},\n"
+			"  {\"tick\": 2, \"event\": \"UNIT_MOVED\", \"unitId\": 1},\n"
+			"  {\"tick\": 3, \"event\": \"UNIT_ATTACKED\", \"sourceUnitId\": 1},\n"
+			"  {\"tick\": 3, \"event\": \"UNIT_DIED\", \"unitId\": 2}\n"
+			"]\n");
+		std::ostringstream output;
+
+		battle_sim::app::inspectTrace(trace, output);
+
+		requireEqual(
+			output.str(),
+			"Battle summary\n"
+			"Ticks: 3\n"
+			"Units spawned: 1\n"
+			"Moves: 1\n"
+			"Attacks: 1\n"
+			"Deaths: 1\n",
+			"trace summary");
+	}
+
+	void traceInspectorRejectsMalformedTrace()
+	{
+		std::istringstream trace("{\"event\":\"UNIT_SPAWNED\"}");
+		std::ostringstream output;
+
+		try
+		{
+			battle_sim::app::inspectTrace(trace, output);
+		}
+		catch (const std::runtime_error& ex)
+		{
+			requireContains(ex.what(), "Malformed trace: expected a JSON array");
+			return;
+		}
+
+		throw std::runtime_error("Expected malformed trace to be rejected");
 	}
 
 	void genericSpawnUsesArchetypeRegistry()
@@ -557,6 +759,7 @@ int main()
 		{"towerDoesNotMoveWithoutTarget", towerDoesNotMoveWithoutTarget},
 		{"simulationStopsWhenNoEntityCanAct", simulationStopsWhenNoEntityCanAct},
 		{"ravenMovesTwoCells", ravenMovesTwoCells},
+		{"marchEndedReportsFinalPosition", marchEndedReportsFinalPosition},
 		{"ravenAllowsBlockingEntityOnSameCell", ravenAllowsBlockingEntityOnSameCell},
 		{"ravenAttacksAdjacentWithAgility", ravenAttacksAdjacentWithAgility},
 		{"ravenCanBeShotAtEffectiveRange", ravenCanBeShotAtEffectiveRange},
@@ -572,8 +775,14 @@ int main()
 		{"fixedSeedReplaysRandomChoices", fixedSeedReplaysRandomChoices},
 		{"configSeedReplaysRandomChoices", configSeedReplaysRandomChoices},
 		{"configRejectsUnknownFeature", configRejectsUnknownFeature},
+		{"configRejectsDisabledRequiredFeature", configRejectsDisabledRequiredFeature},
 		{"dataDrivenArchetypeLoadsFromConfig", dataDrivenArchetypeLoadsFromConfig},
+		{"jsonRuleArrayDefinesSpearman", jsonRuleArrayDefinesSpearman},
+		{"jsonRuleArrayRejectsUnknownHandler", jsonRuleArrayRejectsUnknownHandler},
 		{"debugSummaryUsesStderrOnly", debugSummaryUsesStderrOnly},
+		{"jsonTraceCapturesDeterministicEvents", jsonTraceCapturesDeterministicEvents},
+		{"traceInspectorPrintsSummary", traceInspectorPrintsSummary},
+		{"traceInspectorRejectsMalformedTrace", traceInspectorRejectsMalformedTrace},
 		{"genericSpawnUsesArchetypeRegistry", genericSpawnUsesArchetypeRegistry},
 		{"lancerUsesReachWithoutCoreChanges", lancerUsesReachWithoutCoreChanges},
 		{"legacyCommandsProduceCompatibilityEvents", legacyCommandsProduceCompatibilityEvents},

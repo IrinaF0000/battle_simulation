@@ -47,7 +47,7 @@ namespace battle_sim::io
 				entityCreated->tick,
 				UnitSpawned{
 					entityCreated->entity,
-					entityName(entityCreated->entity),
+					entityCreated->archetypeId.empty() ? entityName(entityCreated->entity) : entityCreated->archetypeId,
 					toUnsigned(entityCreated->position.x),
 					toUnsigned(entityCreated->position.y)});
 		}
@@ -64,7 +64,12 @@ namespace battle_sim::io
 		}
 		else if (const auto* marchEnded = std::any_cast<features::battle::MarchEndedEvent>(&event))
 		{
-			_log.log(marchEnded->tick, MarchEnded{marchEnded->entity});
+			_log.log(
+				marchEnded->tick,
+				MarchEnded{
+					marchEnded->entity,
+					toUnsigned(marchEnded->position.x),
+					toUnsigned(marchEnded->position.y)});
 		}
 		else if (const auto* entityMoved = std::any_cast<features::battle::EntityMovedEvent>(&event))
 		{

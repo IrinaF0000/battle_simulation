@@ -86,7 +86,7 @@ namespace battle_sim::features::battle
 		}
 
 		applyComponents(recipe, game);
-		game.events.publish(features::battle::EntityCreatedEvent{tick, recipe.id, recipe.position});
+		game.events.publish(features::battle::EntityCreatedEvent{tick, recipe.id, recipe.archetypeId, recipe.position});
 		return true;
 	}
 }

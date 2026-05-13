@@ -5,6 +5,7 @@
 #include "Core/CommonTypes.hpp"
 
 #include <cstdint>
+#include <string>
 
 namespace battle_sim::features::battle
 {
@@ -31,6 +32,7 @@ namespace battle_sim::features::battle
 	{
 		core::Tick tick{};
 		core::EntityId entity{};
+		std::string archetypeId;
 		core::Position position{};
 	};
 
@@ -46,6 +48,7 @@ namespace battle_sim::features::battle
 	{
 		core::Tick tick{};
 		core::EntityId entity{};
+		core::Position position{};
 	};
 
 	struct EntityMovedEvent

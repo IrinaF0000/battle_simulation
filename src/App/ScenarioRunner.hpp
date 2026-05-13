@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "Core/Config/FeatureConfig.hpp"
+
 #include <cstdint>
 #include <iosfwd>
 #include <optional>
@@ -13,7 +15,10 @@ namespace battle_sim::app
 	struct RunOptions
 	{
 		std::optional<std::uint32_t> rngSeed;
+		int maxTicks{10000};
+		std::vector<core::config::FeatureConfig> features;
 		std::vector<std::string> archetypeFiles;
+		std::ostream* traceJsonOutput{};
 		bool debugSummary{false};
 	};
 

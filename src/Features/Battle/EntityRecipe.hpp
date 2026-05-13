@@ -6,6 +6,8 @@
 #include "Core/Ecs/ActionRules.hpp"
 #include "Features/Battle/Components/BattleComponents.hpp"
 
+#include <string>
+
 namespace battle_sim::features::battle
 {
 	struct StatComponents
@@ -21,6 +23,7 @@ namespace battle_sim::features::battle
 	struct EntityRecipe
 	{
 		core::EntityId id{};
+		std::string archetypeId;
 		core::Position position{};
 		StatComponents stats{};
 		bool mobile{true};

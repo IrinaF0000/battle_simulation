@@ -155,7 +155,7 @@ namespace battle_sim::features::battle
 			return primaryApplied || afterApplied;
 		}
 
-		void cleanupDead(core::engine::GameContext& game)
+		void cleanupDeadEntities(core::engine::GameContext& game)
 		{
 			auto& world = game.world;
 			const auto& policies = battlePolicies(game);
@@ -243,6 +243,26 @@ namespace battle_sim::features::battle
 		return executed;
 	}
 
+	int BattleTurnSystem::executeTick(core::engine::GameContext& game)
+	{
+		int tickActions = 0;
+		for (const auto entity : game.world.creationOrder())
+		{
+			tickActions += executeEntity(game, entity);
+		}
+		return tickActions;
+	}
+
+	void BattleTurnSystem::cleanupDead(core::engine::GameContext& game)
+	{
+		cleanupDeadEntities(game);
+	}
+
+	bool BattleTurnSystem::canContinue(const core::engine::GameContext& game)
+	{
+		return game.resources.contains<BattleMapResource>() && hasEnoughActiveEntities(battlePolicies(game), game.world);
+	}
+
 	BattleTurnResult BattleTurnSystem::run(core::engine::GameContext& game)
 	{
 		if (!game.resources.contains<BattleMapResource>())
@@ -252,15 +272,10 @@ namespace battle_sim::features::battle
 
 		BattleTurnResult result;
 		game.world.setTick(2);
-		while (hasEnoughActiveEntities(battlePolicies(game), game.world) && result.ticksExecuted < game.settings.maxTicks)
+		while (canContinue(game) && result.ticksExecuted < game.settings.maxTicks)
 		{
-			int tickActions = 0;
-			for (const auto entity : game.world.creationOrder())
-			{
-				tickActions += executeEntity(game, entity);
-			}
-
-			cleanupDead(game);
+			const int tickActions = executeTick(game);
+			cleanupDeadEntities(game);
 			result.actionsExecuted += tickActions;
 			if (shouldStopAfterNoActions(battlePolicies(game), tickActions))
 			{

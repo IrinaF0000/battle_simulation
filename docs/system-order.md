@@ -16,19 +16,21 @@ Setup at tick `1`:
 | 4 | `BattleSpawnSystem` | Validates spawn, creates entity, writes feature-owned components, updates map occupancy, emits `UNIT_SPAWNED`. |
 | 5 | `MARCH` handler | Starts movement intent through `BattleMarchSystem`, emits `MARCH_STARTED`, and stores target state. |
 
-Gameplay ticks start at tick `2`:
+Gameplay ticks run through `EngineRunner` and start at tick `2`:
 
 | Order | System | Responsibility |
 | --- | --- | --- |
-| 1 | `BattleTurnSystem` | Iterates active entities in creation order. |
-| 2 | `canActThisTurn` policy | Applies battle lifecycle rules. |
-| 3 | Rule budget loop | Executes rules by priority and action budget. |
-| 4 | Rule condition | Checks whether the rule may run. |
-| 5 | Rule selector | Builds candidate targets. |
-| 6 | Target picker | Chooses no target, first target, random target, or all targets. |
-| 7 | Primary effect | Applies damage, healing, movement, state change, self-destruction, or no effect. |
-| 8 | After effect | Applies configured follow-up state or destruction behavior. |
-| 9 | Battle cleanup | Removes dead entities after the tick's entity turns finish. |
+| 1 | `Startup` phase | Initializes the gameplay tick to `2` when a battle map exists. |
+| 2 | `BeforeTick` phase | Stops if the battle cannot continue. |
+| 3 | `Tick` phase / `BattleTurnSystem` | Iterates active entities in creation order. |
+| 4 | `canActThisTurn` policy | Applies battle lifecycle rules. |
+| 5 | Rule budget loop | Executes rules by priority and action budget. |
+| 6 | Rule condition | Checks whether the rule may run. |
+| 7 | Rule selector | Builds candidate targets. |
+| 8 | Target picker | Chooses no target, first target, random target, or all targets. |
+| 9 | Primary effect | Applies damage, healing, movement, state change, self-destruction, or no effect. |
+| 10 | After effect | Applies configured follow-up state or destruction behavior. |
+| 11 | `AfterTick` phase / battle cleanup | Removes dead entities and stops if the tick executed no actions. |
 
 The loop stops when one or fewer active entities remain, or when a tick executes no actions.
 

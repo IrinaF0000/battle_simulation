@@ -6,7 +6,7 @@ The current slice is intentionally small:
 
 - one flat JSON object per archetype file;
 - required base component fields only;
-- action behavior selected from a small built-in template list;
+- action behavior selected from a small built-in template list or a simple `rules` array;
 - registration through scenario config `archetypeFile`;
 - spawning through the existing generic `SPAWN` command.
 
@@ -63,6 +63,7 @@ Supported fields:
 | `blocksCell` | boolean | no | Whether the entity occupies a blocking map cell. Defaults to `true`. |
 | `attackable` | boolean | no | Whether the entity can be targeted by attackable-only rules. Defaults to `true`. |
 | `actionBudget` | positive integer | no | Points per turn. Defaults to `1`. |
+| `rules` | array | no | Simple action-rule array. When present, it replaces `actionTemplate`. |
 
 Supported `actionTemplate` values:
 
@@ -73,4 +74,24 @@ Supported `actionTemplate` values:
 
 ## Current Limits
 
-The parser supports only this flat JSON shape. M7 deliberately avoids nested component factories, custom rule graphs, config-time feature composition, and runtime scripting.
+Rule arrays support existing registered handler ids only. They do not evaluate expressions, run scripts, or define new handlers.
+
+Supported rule fields:
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `priority` | integer | Higher priority rules run first. |
+| `condition` | string | Registered condition handler id. |
+| `selector` | string | Registered target selector handler id. |
+| `targetPicker` | string | Registered target picker handler id. |
+| `effect` | string | Registered effect handler id. Required. |
+| `amount` | integer | Literal effect amount. |
+| `amountValueResolver` | string | Registered value resolver for amount. |
+| `minDistance` / `maxDistance` | integer | Distance selector parameters. |
+| `stepDistance` | integer | Movement distance. |
+| `stepDistanceValueResolver` | string | Registered value resolver for movement distance. |
+| `cost` | positive integer | Action budget cost. Defaults to `1`. |
+| `allowEmptyTargets` | boolean | Allows effects like movement without targets. |
+| `requireAttackableTarget` | boolean | Filters target list to attackable entities. |
+
+`config/archetypes/spearman.json` is the rule-array example.

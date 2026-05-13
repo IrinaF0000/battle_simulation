@@ -11,6 +11,8 @@
 
 namespace battle_sim::core::engine
 {
+	struct GameContext;
+
 	enum class Phase
 	{
 		Startup,
@@ -26,7 +28,7 @@ namespace battle_sim::core::engine
 	{
 	public:
 		virtual ~IScheduledSystem() = default;
-		virtual void run() = 0;
+		virtual bool run(GameContext& context) = 0;
 	};
 
 	class Scheduler
@@ -41,23 +43,27 @@ namespace battle_sim::core::engine
 			_systems[indexOf(phase)].push_back(std::move(system));
 		}
 
-		void runPhase(Phase phase)
+		bool runPhase(Phase phase, GameContext& context)
 		{
+			bool stopRequested = false;
 			for (const auto& system : _systems[indexOf(phase)])
 			{
-				system->run();
+				stopRequested = system->run(context) || stopRequested;
 			}
+			return stopRequested;
 		}
 
-		void runAllPhases()
+		bool runAllPhases(GameContext& context)
 		{
+			bool stopRequested = false;
 			for (std::size_t phase = 0; phase < indexOf(Phase::Count); ++phase)
 			{
 				for (const auto& system : _systems[phase])
 				{
-					system->run();
+					stopRequested = system->run(context) || stopRequested;
 				}
 			}
+			return stopRequested;
 		}
 
 	private:

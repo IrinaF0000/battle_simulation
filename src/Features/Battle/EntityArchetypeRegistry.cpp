@@ -31,6 +31,7 @@ namespace battle_sim::features::battle
 		const auto& archetype = get(id);
 		return EntityRecipe{
 			.id = entityId,
+			.archetypeId = id,
 			.position = pos,
 			.stats = stats,
 			.mobile = archetype.mobile,

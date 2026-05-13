@@ -220,6 +220,8 @@ namespace battle_sim::app
 
 		RunOptions options;
 		options.rngSeed = config.rngSeed;
+		options.maxTicks = config.maxTicks;
+		options.features = config.features;
 		options.archetypeFiles = config.archetypeFiles;
 		for (const auto& feature : config.features)
 		{

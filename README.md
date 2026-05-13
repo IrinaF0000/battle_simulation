@@ -25,11 +25,22 @@ ctest --test-dir build --output-on-failure
 ./build/battle_sim commands_validation.txt
 ```
 
+Preset flow:
+
+```bash
+cmake --preset dev
+cmake --build --preset dev
+ctest --preset dev
+```
+
 Optional scenario config:
 
 ```bash
 ./build/battle_sim commands_example.txt config/default.cfg
 ./build/battle_sim commands_example.txt config/data-driven-duelist.cfg
+./build/battle_sim commands_example.txt config/data-driven-spearman.cfg
+./build/battle_sim commands_example.txt --trace-json trace.json
+./build/battle_sim inspect trace.json
 ```
 
 Enable warnings as errors locally when tightening changes:
@@ -64,11 +75,13 @@ AI tools may assist with decomposition, navigation, boilerplate, test ideas, and
 - `docs/architecture-roadmap.md`
 - `docs/ai-assisted-development.md`
 - `docs/agent-workflow.md`
+- `docs/case-studies/add-json-trace-agent-run.md`
 - `docs/deterministic-simulation.md`
 - `docs/game-loop.md`
 - `docs/system-order.md`
 - `docs/configuration.md`
 - `docs/data-driven-archetypes.md`
+- `docs/json-trace.md`
 - `docs/performance-notes.md`
 
 ## License

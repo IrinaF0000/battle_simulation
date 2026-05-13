@@ -51,7 +51,7 @@ namespace battle_sim::features::battle
 		game.events.publish(features::battle::MarchStartedEvent{tick, entity, position->value, target});
 		if (target == position->value)
 		{
-			game.events.publish(features::battle::MarchEndedEvent{tick, entity});
+			game.events.publish(features::battle::MarchEndedEvent{tick, entity, position->value});
 			game.world.components<MarchTargetComponent>().remove(entity);
 		}
 		else

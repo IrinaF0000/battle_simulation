@@ -55,7 +55,7 @@ namespace battle_sim::features::battle
 				game.events.publish(features::battle::EntityMovedEvent{game.world.tick(), entity, from, to});
 				if (reachesMarchTarget)
 				{
-					game.events.publish(features::battle::MarchEndedEvent{game.world.tick(), entity});
+					game.events.publish(features::battle::MarchEndedEvent{game.world.tick(), entity, to});
 				}
 			}};
 	}

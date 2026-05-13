@@ -16,34 +16,53 @@ namespace battle_sim::core::engine
 		int ticksExecuted = 0;
 		const int maxTicks = std::max(0, _context.settings.maxTicks);
 
-		_context.scheduler.runPhase(Phase::Startup);
+		if (_context.scheduler.runPhase(Phase::Startup, _context))
+		{
+			requestStop();
+		}
 
 		while (!_stopRequested && ticksExecuted < maxTicks)
 		{
-			_context.scheduler.runPhase(Phase::BeforeTick);
+			if (_context.scheduler.runPhase(Phase::BeforeTick, _context))
+			{
+				requestStop();
+			}
 			if (_stopRequested)
 			{
 				break;
 			}
 
-			_context.scheduler.runPhase(Phase::Tick);
+			if (_context.scheduler.runPhase(Phase::Tick, _context))
+			{
+				requestStop();
+			}
 			if (_stopRequested)
 			{
 				break;
 			}
 
-			_context.scheduler.runPhase(Phase::AfterTick);
+			if (_context.scheduler.runPhase(Phase::AfterTick, _context))
+			{
+				requestStop();
+			}
 			if (_stopRequested)
 			{
 				break;
 			}
 
-			_context.scheduler.runPhase(Phase::Cleanup);
+			if (_context.scheduler.runPhase(Phase::Cleanup, _context))
+			{
+				requestStop();
+			}
+			if (_stopRequested)
+			{
+				break;
+			}
 			++ticksExecuted;
 			_context.world.advanceTick();
 		}
 
-		_context.scheduler.runPhase(Phase::Shutdown);
+		_context.scheduler.runPhase(Phase::Shutdown, _context);
 
 		return EngineRunResult{
 			.ticksExecuted = ticksExecuted,
