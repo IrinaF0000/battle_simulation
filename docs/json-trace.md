@@ -19,6 +19,14 @@ Visual replay:
 Open tools/replay-viewer/index.html and load trace.json.
 ```
 
+Local browser run and replay:
+
+```bash
+python tools/local-runner/server.py --exe build/battle_sim
+```
+
+Then open `http://127.0.0.1:8765`. The local runner generates a scenario command file, runs `battle_sim <commands-file> --trace-json <trace-file>`, and loads the resulting trace in the viewer.
+
 The trace is a JSON array. Each record contains `tick`, `event`, and event-specific fields.
 
 Small trace excerpt:

@@ -15,6 +15,7 @@ This index maps the public-facing docs for the C++20 gameplay architecture sandb
 - `data-driven-archetypes.md`: JSON archetypes and simple rule arrays.
 - `json-trace.md`: optional trace output and `inspect` summaries.
 - `../tools/replay-viewer/README.md`: static browser replay viewer for trace files.
+- `../tools/local-runner/README.md`: local-only browser helper for generating and replaying traces.
 - `deterministic-simulation.md`: replay and golden-output validation.
 
 ## Engineering Process

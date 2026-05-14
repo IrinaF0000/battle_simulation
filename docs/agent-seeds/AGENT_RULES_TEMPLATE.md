@@ -34,6 +34,7 @@ Use search before opening large files.
 - Do not start future milestones.
 - Do not fix unrelated issues.
 - Do not commit generated artifacts or local files.
+- Keep `*_development_plan.md` files ignored and untracked unless the human owner explicitly asks to include one.
 
 ## Role boundaries
 

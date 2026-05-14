@@ -18,6 +18,7 @@ This file describes the optional AI-agent workflow used while developing this re
 - Require acceptance criteria and verification commands before implementation.
 - Do not write C-style casts. Remove unnecessary casts; otherwise use explicit C++ casts.
 - Avoid known C++/OOP antipatterns: raw owning pointers, hidden global state, god objects, inheritance for code reuse, needless downcasts, macro-driven logic, and exceptions as normal control flow.
+- Treat `*_development_plan.md` files as local planning artifacts unless a task explicitly says otherwise; keep them ignored, untracked, and out of commits.
 
 ## Roles
 
@@ -107,6 +108,7 @@ Before committing, the agent must ensure that:
 - the diff is limited to the approved files or approved task area;
 - build, tests, scenario validation, and `git diff --check` pass;
 - generated files, build artifacts, caches, and local IDE files are not included;
+- local development plan files such as `*_development_plan.md` are not staged or committed;
 - the commit message clearly describes the actual change.
 
 Agents must keep commits small and task-scoped.

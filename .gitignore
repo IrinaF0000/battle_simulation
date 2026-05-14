@@ -38,3 +38,7 @@ Testing/
 
 # Optional local agent scratch files
 /AGENT_*.md
+/*_development_plan.md
+
+# Generated local runner artifacts
+/tools/local-runner/runs/

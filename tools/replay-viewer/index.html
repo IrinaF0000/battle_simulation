@@ -7,8 +7,8 @@
   <style>
     :root {
       color-scheme: light;
-      --bg: #f7f5f0;
-      --panel: #fffdfa;
+      --bg: #f6f7f9;
+      --panel: #ffffff;
       --panel-alt: #f1f4f8;
       --text: #1c2430;
       --muted: #687386;
@@ -138,6 +138,19 @@
 
     .toolbar .spacer {
       flex: 1 1 auto;
+    }
+
+    .primary-action {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    .primary-action:hover:not(:disabled),
+    .primary-action:focus-visible {
+      background: var(--accent-strong);
+      border-color: var(--accent-strong);
     }
 
     .tick-readout {
@@ -298,6 +311,121 @@
       font-size: 15px;
       line-height: 1.2;
       margin: 0 0 10px;
+    }
+
+    .runner-status {
+      background: var(--panel-alt);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+      margin-bottom: 10px;
+      min-height: 38px;
+      overflow-wrap: anywhere;
+      padding: 8px 10px;
+    }
+
+    .runner-status.ok {
+      background: #e8f7f3;
+      border-color: #9fd8cb;
+      color: var(--accent-strong);
+    }
+
+    .runner-status.warning {
+      background: #fff8e6;
+      border-color: #f1c27d;
+      color: var(--warning);
+    }
+
+    .runner-status.error {
+      background: #fff1f0;
+      border-color: #f2b8b5;
+      color: var(--danger);
+    }
+
+    .run-form {
+      display: grid;
+      gap: 10px;
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .field {
+      color: var(--muted);
+      display: grid;
+      font-size: 12px;
+      font-weight: 700;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .field.wide {
+      grid-column: 1 / -1;
+    }
+
+    .field input {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--text);
+      min-height: 34px;
+      min-width: 0;
+      padding: 0 8px;
+      width: 100%;
+    }
+
+    .field input:focus-visible {
+      border-color: var(--accent);
+      outline: 2px solid rgba(15, 118, 110, 0.18);
+      outline-offset: 1px;
+    }
+
+    .run-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .run-actions button {
+      flex: 1 1 112px;
+    }
+
+    .run-message {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+      min-height: 18px;
+      overflow-wrap: anywhere;
+    }
+
+    .run-message.error {
+      color: var(--danger);
+    }
+
+    .run-message.ok {
+      color: var(--accent-strong);
+    }
+
+    .artifact-links {
+      display: flex;
+      flex-wrap: wrap;
+      font-size: 13px;
+      gap: 8px;
+    }
+
+    .artifact-links a {
+      color: var(--accent-strong);
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .artifact-links a:hover,
+    .artifact-links a:focus-visible {
+      text-decoration: underline;
     }
 
     .summary-list,
@@ -488,6 +616,64 @@
 
     <aside class="side-panel" aria-label="Trace details">
       <section class="info-section">
+        <h2>Run Configuration</h2>
+        <div id="runnerStatus" class="runner-status">Checking local runner...</div>
+        <form id="runForm" class="run-form">
+          <div class="form-grid">
+            <label class="field">
+              Map width
+              <input id="mapWidth" name="mapWidth" type="number" min="1" max="64" value="8" required>
+            </label>
+            <label class="field">
+              Map height
+              <input id="mapHeight" name="mapHeight" type="number" min="1" max="64" value="5" required>
+            </label>
+            <label class="field">
+              Random seed
+              <input id="seed" name="seed" type="number" min="0" max="2147483647" value="1" required>
+            </label>
+            <label class="field">
+              Swordsmen
+              <input id="swordsmanCount" name="swordsmanCount" type="number" min="0" max="128" value="2" required>
+            </label>
+            <label class="field">
+              Hunters
+              <input id="hunterCount" name="hunterCount" type="number" min="0" max="128" value="1" required>
+            </label>
+            <label class="field">
+              Towers
+              <input id="towerCount" name="towerCount" type="number" min="0" max="128" value="1" required>
+            </label>
+            <label class="field">
+              Healers
+              <input id="healerCount" name="healerCount" type="number" min="0" max="128" value="1" required>
+            </label>
+            <label class="field">
+              Mines
+              <input id="mineCount" name="mineCount" type="number" min="0" max="128" value="1" required>
+            </label>
+            <label class="field">
+              Ravens
+              <input id="ravenCount" name="ravenCount" type="number" min="0" max="128" value="1" required>
+            </label>
+            <label class="field wide">
+              Run name
+              <input id="runName" name="runName" type="text" maxlength="40" placeholder="optional">
+            </label>
+          </div>
+          <div class="run-actions">
+            <button id="runButton" class="primary-action" type="submit">Run</button>
+            <button id="latestRunButton" type="button">Last Run</button>
+          </div>
+          <div id="runMessage" class="run-message"></div>
+          <div id="artifactLinks" class="artifact-links" hidden>
+            <a id="stdoutLink" href="#" target="_blank" rel="noreferrer">stdout</a>
+            <a id="stderrLink" href="#" target="_blank" rel="noreferrer">stderr</a>
+            <a id="scenarioLink" href="#" target="_blank" rel="noreferrer">scenario</a>
+          </div>
+        </form>
+      </section>
+      <section class="info-section">
         <h2>Summary</h2>
         <dl id="summary" class="summary-list"></dl>
       </section>
@@ -545,7 +731,16 @@
         summary: document.getElementById("summary"),
         selected: document.getElementById("selectedUnit"),
         warnings: document.getElementById("warnings"),
-        log: document.getElementById("eventLog")
+        log: document.getElementById("eventLog"),
+        runnerStatus: document.getElementById("runnerStatus"),
+        runForm: document.getElementById("runForm"),
+        runButton: document.getElementById("runButton"),
+        latestRun: document.getElementById("latestRunButton"),
+        runMessage: document.getElementById("runMessage"),
+        artifactLinks: document.getElementById("artifactLinks"),
+        stdoutLink: document.getElementById("stdoutLink"),
+        stderrLink: document.getElementById("stderrLink"),
+        scenarioLink: document.getElementById("scenarioLink")
       };
 
       const state = {
@@ -559,10 +754,13 @@
         totalCounts: new Map(),
         validationWarnings: [],
         invalidEventIndexes: new Set(),
-        currentSnapshot: null
+        currentSnapshot: null,
+        runnerAvailable: false
       };
 
       els.file.addEventListener("change", handleFile);
+      els.runForm.addEventListener("submit", handleRunSubmit);
+      els.latestRun.addEventListener("click", handleLatestRun);
       els.reset.addEventListener("click", () => jumpToIndex(0));
       els.prev.addEventListener("click", () => jumpToIndex(state.currentTickIndex - 1));
       els.next.addEventListener("click", () => jumpToIndex(state.currentTickIndex + 1));
@@ -575,6 +773,7 @@
       });
 
       renderEmpty();
+      checkRunner();
 
       function handleFile(event) {
         const [file] = event.target.files;
@@ -586,6 +785,166 @@
         reader.onload = () => loadTrace(reader.result, file.name);
         reader.onerror = () => setError("Could not read selected file.");
         reader.readAsText(file);
+      }
+
+      async function checkRunner() {
+        setRunnerStatus("Checking local runner...", "warning");
+        els.runButton.disabled = true;
+        els.latestRun.disabled = true;
+
+        if (window.location.protocol === "file:") {
+          state.runnerAvailable = false;
+          setRunnerStatus(
+            "Manual trace loading works from file://. To run simulations, start the local runner and open http://127.0.0.1:8765.",
+            "warning"
+          );
+          return;
+        }
+
+        try {
+          const response = await fetch(runnerUrl("/api/health"));
+          if (!response.ok) {
+            throw new Error(`Local runner returned HTTP ${response.status}.`);
+          }
+          const data = await response.json();
+          state.runnerAvailable = true;
+          els.runButton.disabled = false;
+          els.latestRun.disabled = false;
+          if (data.executable && data.executable.found) {
+            setRunnerStatus(`Local runner connected. Executable: ${data.executable.path}`, "ok");
+          } else {
+            setRunnerStatus("Local runner connected, but battle_sim was not found. Start it with --exe or set BATTLE_SIM_EXE.", "warning");
+          }
+        } catch (error) {
+          state.runnerAvailable = false;
+          els.runButton.disabled = true;
+          els.latestRun.disabled = true;
+          setRunnerStatus("Local runner is not available. Start it with: python tools/local-runner/server.py and open http://127.0.0.1:8765", "error");
+        }
+      }
+
+      async function handleRunSubmit(event) {
+        event.preventDefault();
+        clearArtifactLinks();
+        setRunMessage("Running simulation...", "");
+        els.runButton.disabled = true;
+        try {
+          const response = await fetch(runnerUrl("/api/run"), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(readRunForm())
+          });
+          const data = await response.json();
+          showArtifactLinks(data);
+          if (!response.ok) {
+            throw new Error(data.error || `Local runner returned HTTP ${response.status}.`);
+          }
+          if (!data.ok) {
+            setRunMessage(data.error || "Simulation failed.", "error");
+            return;
+          }
+          const loaded = await loadTraceFromRunner(data.traceUrl, `run ${data.runId}`);
+          setRunMessage(loaded ? `Run ${data.runId} completed and loaded.` : `Run ${data.runId} completed, but trace loading failed.`, loaded ? "ok" : "error");
+        } catch (error) {
+          setRunMessage(error.message || "Local run failed.", "error");
+          if (!state.runnerAvailable) {
+            setRunnerStatus("Local runner is not available. Start it with: python tools/local-runner/server.py", "error");
+          }
+        } finally {
+          checkRunner();
+        }
+      }
+
+      async function handleLatestRun() {
+        clearArtifactLinks();
+        setRunMessage("Loading latest run...", "");
+        try {
+          const response = await fetch(runnerUrl("/api/runs/latest"));
+          const data = await response.json();
+          if (!response.ok || !data.ok) {
+            throw new Error(data.error || `Local runner returned HTTP ${response.status}.`);
+          }
+          const run = data.run;
+          showArtifactLinks(run);
+          if (!run.traceUrl) {
+            throw new Error("Latest run has no trace.json.");
+          }
+          const loaded = await loadTraceFromRunner(run.traceUrl, `run ${run.runId}`);
+          setRunMessage(loaded ? `Run ${run.runId} loaded.` : `Run ${run.runId} has an invalid trace.`, loaded ? "ok" : "error");
+        } catch (error) {
+          setRunMessage(error.message || "Could not load latest run.", "error");
+        }
+      }
+
+      async function loadTraceFromRunner(tracePath, label) {
+        const response = await fetch(runnerUrl(tracePath));
+        if (!response.ok) {
+          throw new Error(`Trace request returned HTTP ${response.status}.`);
+        }
+        const rawText = await response.text();
+        return loadTrace(rawText, label);
+      }
+
+      function readRunForm() {
+        return {
+          mapWidth: numberField("mapWidth"),
+          mapHeight: numberField("mapHeight"),
+          seed: numberField("seed"),
+          runName: document.getElementById("runName").value,
+          unitCounts: {
+            Swordsman: numberField("swordsmanCount"),
+            Hunter: numberField("hunterCount"),
+            Tower: numberField("towerCount"),
+            Healer: numberField("healerCount"),
+            Mine: numberField("mineCount"),
+            Raven: numberField("ravenCount")
+          }
+        };
+      }
+
+      function numberField(id) {
+        return Number(document.getElementById(id).value);
+      }
+
+      function runnerUrl(path) {
+        if (/^https?:\/\//.test(path)) {
+          return path;
+        }
+        return path;
+      }
+
+      function setRunnerStatus(message, level) {
+        els.runnerStatus.className = `runner-status ${level || ""}`.trim();
+        els.runnerStatus.textContent = message;
+      }
+
+      function setRunMessage(message, level) {
+        els.runMessage.className = `run-message ${level || ""}`.trim();
+        els.runMessage.textContent = message;
+      }
+
+      function showArtifactLinks(data) {
+        const links = [
+          [els.stdoutLink, data.stdoutUrl],
+          [els.stderrLink, data.stderrUrl],
+          [els.scenarioLink, data.scenarioUrl]
+        ];
+        let hasAny = false;
+        for (const [element, url] of links) {
+          if (url) {
+            element.hidden = false;
+            element.href = runnerUrl(url);
+            hasAny = true;
+          } else {
+            element.hidden = true;
+            element.removeAttribute("href");
+          }
+        }
+        els.artifactLinks.hidden = !hasAny;
+      }
+
+      function clearArtifactLinks() {
+        showArtifactLinks({});
       }
 
       function loadTrace(rawText, filename) {
@@ -617,6 +976,7 @@
 
           setStatus(`${filename} loaded. ${state.events.length} events across ${state.ticks.length} ticks.`, validation.warnings.length ? "warning" : "ok");
           renderAtCurrentTick();
+          return true;
         } catch (error) {
           state.events = [];
           state.sortedEvents = [];
@@ -628,6 +988,7 @@
           state.totalCounts = new Map();
           setError(error.message || "Invalid trace file.");
           renderEmpty();
+          return false;
         }
       }
 
@@ -928,12 +1289,12 @@
         els.map.className = "map-grid";
         els.map.style.gridTemplateColumns = `repeat(${snapshot.map.width}, minmax(48px, 58px))`;
         els.map.style.gridTemplateRows = `repeat(${snapshot.map.height}, minmax(48px, 58px))`;
-        els.map.innerHTML = "";
-        els.mapMeta.innerHTML = `
-          <span>Map: ${snapshot.map.width} x ${snapshot.map.height}</span>
-          <span>Tick events: ${snapshot.currentEvents.length}</span>
-          <span>Visible units: ${snapshot.units.size}</span>
-        `;
+        els.map.replaceChildren();
+        setInlineMeta(els.mapMeta, [
+          `Map: ${snapshot.map.width} x ${snapshot.map.height}`,
+          `Tick events: ${snapshot.currentEvents.length}`,
+          `Visible units: ${snapshot.units.size}`
+        ]);
 
         for (let y = 0; y < snapshot.map.height; y += 1) {
           for (let x = 0; x < snapshot.map.width; x += 1) {
@@ -1001,6 +1362,52 @@
         return ids;
       }
 
+      function setInlineMeta(container, values) {
+        container.replaceChildren();
+        for (const value of values) {
+          const item = document.createElement("span");
+          item.textContent = String(value);
+          container.appendChild(item);
+        }
+      }
+
+      function setDefinitionRows(container, rows) {
+        container.replaceChildren();
+        for (const [key, value] of rows) {
+          const row = document.createElement("div");
+          const term = document.createElement("dt");
+          const description = document.createElement("dd");
+          term.textContent = String(key);
+          description.textContent = String(value);
+          row.appendChild(term);
+          row.appendChild(description);
+          container.appendChild(row);
+        }
+      }
+
+      function setWarningRows(warnings) {
+        els.warnings.replaceChildren();
+        for (const warning of warnings) {
+          const item = document.createElement("li");
+          item.textContent = String(warning);
+          els.warnings.appendChild(item);
+        }
+      }
+
+      function setEmptyEventLog() {
+        els.log.replaceChildren();
+        const item = document.createElement("li");
+        const button = document.createElement("button");
+        const line = document.createElement("span");
+        button.type = "button";
+        button.disabled = true;
+        line.className = "event-line";
+        line.textContent = "No events loaded.";
+        button.appendChild(line);
+        item.appendChild(button);
+        els.log.appendChild(item);
+      }
+
       function renderSummary(snapshot, tick) {
         const alive = [...snapshot.units.values()].filter((unit) => unit.alive).length;
         const dead = snapshot.units.size - alive;
@@ -1019,18 +1426,18 @@
           ["Heals", state.totalCounts.get("UNIT_HEALED") || 0],
           ["Deaths", state.totalCounts.get("UNIT_DIED") || 0]
         ];
-        els.summary.innerHTML = rows.map(([key, value]) => `<div><dt>${key}</dt><dd>${value}</dd></div>`).join("");
+        setDefinitionRows(els.summary, rows);
       }
 
       function renderSelected(snapshot) {
         if (state.selectedUnitId === null) {
-          els.selected.innerHTML = `<div><dt>Status</dt><dd>none</dd></div>`;
+          setDefinitionRows(els.selected, [["Status", "none"]]);
           return;
         }
 
         const unit = snapshot.units.get(state.selectedUnitId);
         if (!unit) {
-          els.selected.innerHTML = `<div><dt>Status</dt><dd>not present</dd></div>`;
+          setDefinitionRows(els.selected, [["Status", "not present"]]);
           return;
         }
 
@@ -1045,7 +1452,7 @@
           ["March target", target],
           ["Last event", unit.lastEvent]
         ];
-        els.selected.innerHTML = rows.map(([key, value]) => `<div><dt>${key}</dt><dd>${value}</dd></div>`).join("");
+        setDefinitionRows(els.selected, rows);
       }
 
       function renderWarnings(snapshot) {
@@ -1055,20 +1462,17 @@
         }
 
         if (warnings.length === 0) {
-          els.warnings.innerHTML = `<li>No warnings.</li>`;
+          setWarningRows(["No warnings."]);
           return;
         }
 
-        els.warnings.innerHTML = warnings
-          .slice(0, 12)
-          .map((warning) => `<li>${escapeHtml(warning)}</li>`)
-          .join("");
+        setWarningRows(warnings.slice(0, 12));
       }
 
       function renderEventLog(tick) {
-        els.log.innerHTML = "";
+        els.log.replaceChildren();
         if (state.sortedEvents.length === 0) {
-          els.log.innerHTML = `<li><button type="button" disabled><span class="event-line">No events loaded.</span></button></li>`;
+          setEmptyEventLog();
           return;
         }
 
@@ -1083,11 +1487,23 @@
 
           const line = document.createElement("span");
           line.className = "event-line";
-          const warning = state.invalidEventIndexes.has(event.__index) ? `<span class="event-warning">warning</span>` : "";
-          line.innerHTML = `
-            <span class="event-name">T${nextTick ?? "?"} ${escapeHtml(event.event || "INVALID")}</span>${warning}
-            <span class="event-detail">${escapeHtml(formatEvent(event))}</span>
-          `;
+
+          const eventName = document.createElement("span");
+          eventName.className = "event-name";
+          eventName.textContent = `T${nextTick ?? "?"} ${event.event || "INVALID"}`;
+          line.appendChild(eventName);
+
+          if (state.invalidEventIndexes.has(event.__index)) {
+            const warning = document.createElement("span");
+            warning.className = "event-warning";
+            warning.textContent = "warning";
+            line.appendChild(warning);
+          }
+
+          const detail = document.createElement("span");
+          detail.className = "event-detail";
+          detail.textContent = formatEvent(event);
+          line.appendChild(detail);
 
           button.appendChild(line);
           item.appendChild(button);
@@ -1131,10 +1547,10 @@
         els.map.removeAttribute("style");
         els.map.textContent = "No trace loaded.";
         els.mapMeta.textContent = "";
-        els.summary.innerHTML = `<div><dt>Status</dt><dd>not loaded</dd></div>`;
-        els.selected.innerHTML = `<div><dt>Status</dt><dd>none</dd></div>`;
-        els.warnings.innerHTML = `<li>No warnings.</li>`;
-        els.log.innerHTML = `<li><button type="button" disabled><span class="event-line">No events loaded.</span></button></li>`;
+        setDefinitionRows(els.summary, [["Status", "not loaded"]]);
+        setDefinitionRows(els.selected, [["Status", "none"]]);
+        setWarningRows(["No warnings."]);
+        setEmptyEventLog();
       }
 
       function setStatus(message, level) {
@@ -1145,15 +1561,6 @@
       function setError(message) {
         els.status.className = "status error";
         els.status.textContent = message;
-      }
-
-      function escapeHtml(value) {
-        return String(value)
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#39;");
       }
 
       window.BattleTraceReplayViewer = {

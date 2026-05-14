@@ -53,6 +53,16 @@ Trace and inspect flow:
 
 For visual replay, open `tools/replay-viewer/index.html` and load the generated trace.
 
+Local browser run flow:
+
+```bash
+cmake -S . -B build
+cmake --build build --parallel
+python tools/local-runner/server.py --exe build/battle_sim
+```
+
+Then open `http://127.0.0.1:8765`, configure a small scenario, run the simulator, and replay the generated trace. On Windows multi-config builds, pass `build/Debug/battle_sim.exe` or `build/Release/battle_sim.exe` if needed.
+
 Enable warnings as errors locally when tightening changes:
 
 ```bash
@@ -90,6 +100,7 @@ Deaths: 5
 - Deterministic tests, scenario replay checks, architecture boundary checker, and CMake presets.
 - Optional JSON traces, `inspect` summaries, and a documented AI-agent workflow with scoped review gates.
 - Static replay viewer for stepping through JSON trace events.
+- Local-only browser runner for generating and replaying small scenarios through `tools/local-runner/server.py`.
 
 ## Modules
 
@@ -118,6 +129,7 @@ AI tools may assist with decomposition, navigation, implementation, test ideas, 
 - `docs/data-driven-archetypes.md`
 - `docs/json-trace.md`
 - `tools/replay-viewer/README.md`
+- `tools/local-runner/README.md`
 - `docs/agent-workflow.md`
 - `docs/portfolio-summary.md`
 
