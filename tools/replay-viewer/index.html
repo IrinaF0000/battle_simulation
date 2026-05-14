@@ -1,0 +1,1171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Battle Trace Replay Viewer</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f5f0;
+      --panel: #fffdfa;
+      --panel-alt: #f1f4f8;
+      --text: #1c2430;
+      --muted: #687386;
+      --line: #d9dee7;
+      --accent: #0f766e;
+      --accent-strong: #0b5f59;
+      --danger: #b42318;
+      --warning: #a15c07;
+      --grid: #e7ebf0;
+      --shadow: 0 10px 30px rgba(28, 36, 48, 0.08);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--panel);
+      color: var(--text);
+      cursor: pointer;
+      min-height: 36px;
+      padding: 0 12px;
+    }
+
+    button:hover:not(:disabled),
+    button:focus-visible {
+      border-color: var(--accent);
+      outline: 2px solid rgba(15, 118, 110, 0.18);
+      outline-offset: 1px;
+    }
+
+    button:disabled {
+      color: #9aa3b2;
+      cursor: not-allowed;
+    }
+
+    .app-header {
+      align-items: center;
+      background: #13202f;
+      color: #f8fafc;
+      display: flex;
+      gap: 20px;
+      justify-content: space-between;
+      padding: 18px clamp(16px, 4vw, 40px);
+    }
+
+    .app-header h1 {
+      font-size: 24px;
+      line-height: 1.2;
+      margin: 0 0 4px;
+    }
+
+    .app-header p {
+      color: #cbd5e1;
+      font-size: 14px;
+      margin: 0;
+    }
+
+    .file-picker {
+      align-items: center;
+      background: var(--accent);
+      border-radius: 6px;
+      color: #ffffff;
+      cursor: pointer;
+      display: inline-flex;
+      font-weight: 700;
+      min-height: 40px;
+      padding: 0 14px;
+      white-space: nowrap;
+    }
+
+    .file-picker:hover {
+      background: var(--accent-strong);
+    }
+
+    .file-picker input {
+      inline-size: 0;
+      opacity: 0;
+      position: absolute;
+    }
+
+    .shell {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      grid-template-rows: auto minmax(320px, 1fr);
+      padding: 16px clamp(12px, 3vw, 28px) 24px;
+    }
+
+    .stage,
+    .side-panel,
+    .event-panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .stage {
+      min-width: 0;
+      padding: 14px;
+    }
+
+    .toolbar {
+      align-items: center;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .toolbar .spacer {
+      flex: 1 1 auto;
+    }
+
+    .tick-readout {
+      background: var(--panel-alt);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--text);
+      min-height: 36px;
+      padding: 7px 10px;
+    }
+
+    .speed-select {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      min-height: 36px;
+      padding: 0 8px;
+    }
+
+    .status {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--muted);
+      margin-bottom: 12px;
+      min-height: 38px;
+      padding: 8px 10px;
+    }
+
+    .status.error {
+      background: #fff1f0;
+      border-color: #f2b8b5;
+      color: var(--danger);
+    }
+
+    .status.warning {
+      background: #fff8e6;
+      border-color: #f1c27d;
+      color: var(--warning);
+    }
+
+    .map-meta {
+      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      font-size: 13px;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .map-wrap {
+      overflow: auto;
+      padding-bottom: 2px;
+    }
+
+    .map-grid {
+      background: var(--grid);
+      border: 1px solid var(--line);
+      display: grid;
+      gap: 1px;
+      min-block-size: 320px;
+      min-inline-size: 320px;
+      width: max-content;
+    }
+
+    .map-grid.empty {
+      align-items: center;
+      background: var(--panel-alt);
+      color: var(--muted);
+      display: flex;
+      justify-content: center;
+      min-inline-size: 100%;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .cell {
+      background: #ffffff;
+      min-block-size: 58px;
+      min-inline-size: 58px;
+      padding: 4px;
+      position: relative;
+    }
+
+    .cell-coord {
+      color: #9aa3b2;
+      font-size: 10px;
+      line-height: 1;
+      position: absolute;
+      right: 4px;
+      top: 4px;
+    }
+
+    .unit-stack {
+      align-content: end;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      height: 100%;
+      padding-top: 12px;
+    }
+
+    .unit {
+      align-items: center;
+      border: 1px solid rgba(28, 36, 48, 0.2);
+      border-radius: 5px;
+      color: #ffffff;
+      cursor: pointer;
+      display: inline-flex;
+      font-size: 11px;
+      font-weight: 800;
+      justify-content: center;
+      min-height: 24px;
+      min-width: 34px;
+      padding: 0 5px;
+    }
+
+    .unit.swordsman { background: #2563eb; }
+    .unit.hunter { background: #7c3aed; }
+    .unit.healer { background: #0f9f6e; }
+    .unit.tower { background: #4b5563; }
+    .unit.mine { background: #d97706; }
+    .unit.raven { background: #be123c; }
+    .unit.unknown { background: #475569; }
+
+    .unit.highlight {
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.22);
+      transform: translateY(-1px);
+    }
+
+    .unit.selected {
+      outline: 3px solid #111827;
+      outline-offset: 1px;
+    }
+
+    .unit.dead {
+      filter: grayscale(1);
+      opacity: 0.45;
+      text-decoration: line-through;
+    }
+
+    .side-panel {
+      display: grid;
+      gap: 0;
+      grid-row: span 2;
+      overflow: hidden;
+    }
+
+    .info-section {
+      border-bottom: 1px solid var(--line);
+      padding: 14px;
+    }
+
+    .info-section:last-child {
+      border-bottom: 0;
+    }
+
+    .info-section h2,
+    .event-panel h2 {
+      font-size: 15px;
+      line-height: 1.2;
+      margin: 0 0 10px;
+    }
+
+    .summary-list,
+    .unit-details,
+    .warnings-list {
+      margin: 0;
+    }
+
+    .summary-list div,
+    .unit-details div {
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+      padding: 5px 0;
+    }
+
+    .summary-list dt,
+    .unit-details dt {
+      color: var(--muted);
+    }
+
+    .summary-list dd,
+    .unit-details dd {
+      font-weight: 700;
+      margin: 0;
+      text-align: right;
+    }
+
+    .warnings-list {
+      color: var(--warning);
+      font-size: 13px;
+      padding-left: 18px;
+    }
+
+    .warnings-list li + li {
+      margin-top: 6px;
+    }
+
+    .event-panel {
+      grid-column: 1;
+      max-height: 420px;
+      min-width: 0;
+      overflow: hidden;
+      padding: 14px;
+    }
+
+    .event-log {
+      counter-reset: event;
+      list-style: none;
+      margin: 0;
+      max-height: 360px;
+      overflow: auto;
+      padding: 0;
+    }
+
+    .event-log li {
+      border-bottom: 1px solid var(--line);
+      counter-increment: event;
+    }
+
+    .event-log button {
+      align-items: start;
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      color: inherit;
+      display: grid;
+      gap: 8px;
+      grid-template-columns: 54px minmax(0, 1fr);
+      min-height: 42px;
+      padding: 7px 4px;
+      text-align: left;
+      width: 100%;
+    }
+
+    .event-log button::before {
+      color: var(--muted);
+      content: "#" counter(event);
+      font-variant-numeric: tabular-nums;
+      padding-top: 1px;
+    }
+
+    .event-log .current {
+      background: #e6f7f5;
+    }
+
+    .event-log .future {
+      color: #8b95a5;
+    }
+
+    .event-line {
+      min-width: 0;
+    }
+
+    .event-name {
+      font-weight: 800;
+    }
+
+    .event-detail {
+      color: var(--muted);
+      display: block;
+      font-size: 12px;
+      margin-top: 2px;
+      overflow-wrap: anywhere;
+    }
+
+    .event-warning {
+      color: var(--warning);
+      font-size: 12px;
+      font-weight: 700;
+      margin-left: 6px;
+    }
+
+    @media (max-width: 980px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .side-panel,
+      .event-panel {
+        grid-column: 1;
+        grid-row: auto;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .app-header {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .file-picker {
+        justify-content: center;
+      }
+
+      .toolbar {
+        align-items: stretch;
+      }
+
+      .toolbar button,
+      .toolbar select,
+      .tick-readout {
+        flex: 1 1 96px;
+      }
+
+      .cell {
+        min-block-size: 48px;
+        min-inline-size: 48px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <h1>Battle Trace Replay Viewer</h1>
+      <p>Inspect deterministic JSON traces from the C++ battle simulator.</p>
+    </div>
+    <label class="file-picker">
+      Load JSON
+      <input id="traceFile" type="file" accept=".json,application/json">
+    </label>
+  </header>
+
+  <main class="shell">
+    <section class="stage" aria-labelledby="mapTitle">
+      <div class="toolbar">
+        <button id="resetButton" type="button" disabled>Reset</button>
+        <button id="prevButton" type="button" disabled>Prev</button>
+        <button id="playButton" type="button" disabled>Play</button>
+        <button id="nextButton" type="button" disabled>Next</button>
+        <select id="speedSelect" class="speed-select" aria-label="Playback speed">
+          <option value="0.5">0.5x</option>
+          <option value="1" selected>1x</option>
+          <option value="2">2x</option>
+          <option value="4">4x</option>
+        </select>
+        <div class="spacer"></div>
+        <div id="tickReadout" class="tick-readout">Tick: none</div>
+      </div>
+
+      <div id="status" class="status">Load a trace JSON file to begin.</div>
+      <div id="mapMeta" class="map-meta"></div>
+      <div class="map-wrap">
+        <div id="mapGrid" class="map-grid empty">No trace loaded.</div>
+      </div>
+    </section>
+
+    <aside class="side-panel" aria-label="Trace details">
+      <section class="info-section">
+        <h2>Summary</h2>
+        <dl id="summary" class="summary-list"></dl>
+      </section>
+      <section class="info-section">
+        <h2>Selected Unit</h2>
+        <dl id="selectedUnit" class="unit-details"></dl>
+      </section>
+      <section class="info-section">
+        <h2>Warnings</h2>
+        <ul id="warnings" class="warnings-list"></ul>
+      </section>
+    </aside>
+
+    <section class="event-panel" aria-labelledby="eventTitle">
+      <h2 id="eventTitle">Event Log</h2>
+      <ol id="eventLog" class="event-log"></ol>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const supportedEvents = new Set([
+        "MAP_CREATED",
+        "UNIT_SPAWNED",
+        "MARCH_STARTED",
+        "MARCH_ENDED",
+        "UNIT_MOVED",
+        "UNIT_ATTACKED",
+        "UNIT_HEALED",
+        "UNIT_DIED"
+      ]);
+
+      const requiredFields = {
+        MAP_CREATED: { number: ["tick", "width", "height"], string: ["event"] },
+        UNIT_SPAWNED: { number: ["tick", "unitId", "x", "y"], string: ["event", "unitType"] },
+        MARCH_STARTED: { number: ["tick", "unitId", "x", "y", "targetX", "targetY"], string: ["event"] },
+        MARCH_ENDED: { number: ["tick", "unitId", "x", "y"], string: ["event"] },
+        UNIT_MOVED: { number: ["tick", "unitId", "x", "y"], string: ["event"] },
+        UNIT_ATTACKED: { number: ["tick", "sourceUnitId", "targetUnitId", "amount", "resultingValue"], string: ["event"] },
+        UNIT_HEALED: { number: ["tick", "sourceUnitId", "targetUnitId", "amount", "resultingValue"], string: ["event"] },
+        UNIT_DIED: { number: ["tick", "unitId"], string: ["event"] }
+      };
+
+      const els = {
+        file: document.getElementById("traceFile"),
+        reset: document.getElementById("resetButton"),
+        prev: document.getElementById("prevButton"),
+        play: document.getElementById("playButton"),
+        next: document.getElementById("nextButton"),
+        speed: document.getElementById("speedSelect"),
+        tick: document.getElementById("tickReadout"),
+        status: document.getElementById("status"),
+        mapMeta: document.getElementById("mapMeta"),
+        map: document.getElementById("mapGrid"),
+        summary: document.getElementById("summary"),
+        selected: document.getElementById("selectedUnit"),
+        warnings: document.getElementById("warnings"),
+        log: document.getElementById("eventLog")
+      };
+
+      const state = {
+        events: [],
+        sortedEvents: [],
+        eventsByTick: new Map(),
+        ticks: [],
+        currentTickIndex: 0,
+        selectedUnitId: null,
+        playbackTimer: null,
+        totalCounts: new Map(),
+        validationWarnings: [],
+        invalidEventIndexes: new Set(),
+        currentSnapshot: null
+      };
+
+      els.file.addEventListener("change", handleFile);
+      els.reset.addEventListener("click", () => jumpToIndex(0));
+      els.prev.addEventListener("click", () => jumpToIndex(state.currentTickIndex - 1));
+      els.next.addEventListener("click", () => jumpToIndex(state.currentTickIndex + 1));
+      els.play.addEventListener("click", togglePlayback);
+      els.speed.addEventListener("change", () => {
+        if (state.playbackTimer) {
+          stopPlayback();
+          startPlayback();
+        }
+      });
+
+      renderEmpty();
+
+      function handleFile(event) {
+        const [file] = event.target.files;
+        if (!file) {
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => loadTrace(reader.result, file.name);
+        reader.onerror = () => setError("Could not read selected file.");
+        reader.readAsText(file);
+      }
+
+      function loadTrace(rawText, filename) {
+        stopPlayback();
+        try {
+          const parsed = JSON.parse(rawText);
+          const validation = validateTrace(parsed);
+          if (validation.errors.length > 0) {
+            throw new Error(validation.errors[0]);
+          }
+
+          state.events = parsed.map((event, index) => ({ ...event, __index: index }));
+          state.sortedEvents = [...state.events].sort((a, b) => {
+            const leftTick = eventTick(a) ?? Number.MAX_SAFE_INTEGER;
+            const rightTick = eventTick(b) ?? Number.MAX_SAFE_INTEGER;
+            const tickDelta = leftTick - rightTick;
+            return tickDelta || a.__index - b.__index;
+          });
+          state.ticks = [...new Set(state.sortedEvents.map(eventTick).filter((tick) => tick !== null))];
+          if (state.ticks.length === 0) {
+            throw new Error("Trace has no valid tick values.");
+          }
+          state.eventsByTick = groupEventsByTick(state.sortedEvents);
+          state.currentTickIndex = 0;
+          state.selectedUnitId = null;
+          state.validationWarnings = validation.warnings;
+          state.invalidEventIndexes = validation.invalidEventIndexes;
+          state.totalCounts = countEvents(state.events);
+
+          setStatus(`${filename} loaded. ${state.events.length} events across ${state.ticks.length} ticks.`, validation.warnings.length ? "warning" : "ok");
+          renderAtCurrentTick();
+        } catch (error) {
+          state.events = [];
+          state.sortedEvents = [];
+          state.eventsByTick = new Map();
+          state.ticks = [];
+          state.currentSnapshot = null;
+          state.validationWarnings = [];
+          state.invalidEventIndexes = new Set();
+          state.totalCounts = new Map();
+          setError(error.message || "Invalid trace file.");
+          renderEmpty();
+        }
+      }
+
+      function validateTrace(trace) {
+        const warnings = [];
+        const errors = [];
+        const invalidEventIndexes = new Set();
+
+        if (!Array.isArray(trace)) {
+          return { errors: ["Trace root must be a JSON array."], warnings, invalidEventIndexes };
+        }
+
+        if (trace.length === 0) {
+          return { errors: ["Trace is empty."], warnings, invalidEventIndexes };
+        }
+
+        let hasMap = false;
+        trace.forEach((event, index) => {
+          if (!event || typeof event !== "object" || Array.isArray(event)) {
+            errors.push(`Event #${index + 1} must be a JSON object.`);
+            invalidEventIndexes.add(index);
+            return;
+          }
+
+          if (typeof event.event !== "string" || event.event.length === 0) {
+            warnings.push(`Event #${index + 1} is missing a valid event name.`);
+            invalidEventIndexes.add(index);
+            return;
+          }
+
+          if (typeof event.tick !== "number" || !Number.isFinite(event.tick) || event.tick < 0) {
+            warnings.push(`${event.event} at #${index + 1} is missing a valid tick.`);
+            invalidEventIndexes.add(index);
+          }
+
+          if (!supportedEvents.has(event.event)) {
+            warnings.push(`${event.event} at #${index + 1} is unsupported and will be shown as log-only.`);
+            return;
+          }
+
+          if (event.event === "MAP_CREATED") {
+            hasMap = true;
+          }
+
+          const schema = requiredFields[event.event];
+          const missing = [];
+          for (const key of schema.number) {
+            if (typeof event[key] !== "number" || !Number.isFinite(event[key])) {
+              missing.push(key);
+            }
+          }
+          for (const key of schema.string) {
+            if (typeof event[key] !== "string" || event[key].length === 0) {
+              missing.push(key);
+            }
+          }
+
+          if (missing.length > 0) {
+            warnings.push(`${event.event} at #${index + 1} has missing or invalid field(s): ${missing.join(", ")}.`);
+            invalidEventIndexes.add(index);
+          }
+        });
+
+        if (!hasMap) {
+          errors.push("Trace must include MAP_CREATED before it can be replayed.");
+        }
+
+        return { errors, warnings, invalidEventIndexes };
+      }
+
+      function countEvents(events) {
+        const counts = new Map();
+        for (const event of events) {
+          const name = typeof event.event === "string" ? event.event : "INVALID";
+          counts.set(name, (counts.get(name) || 0) + 1);
+        }
+        return counts;
+      }
+
+      function groupEventsByTick(events) {
+        const grouped = new Map();
+        for (const event of events) {
+          const tick = eventTick(event);
+          if (tick === null) {
+            continue;
+          }
+          if (!grouped.has(tick)) {
+            grouped.set(tick, []);
+          }
+          grouped.get(tick).push(event);
+        }
+        return grouped;
+      }
+
+      function eventTick(event) {
+        const tick = Number(event.tick);
+        return Number.isFinite(tick) ? tick : null;
+      }
+
+      function jumpToIndex(nextIndex) {
+        if (state.ticks.length === 0) {
+          return;
+        }
+        state.currentTickIndex = Math.max(0, Math.min(nextIndex, state.ticks.length - 1));
+        renderAtCurrentTick();
+      }
+
+      function jumpToTick(tick) {
+        const index = state.ticks.indexOf(Number(tick));
+        if (index !== -1) {
+          jumpToIndex(index);
+        }
+      }
+
+      function togglePlayback() {
+        if (state.playbackTimer) {
+          stopPlayback();
+        } else {
+          startPlayback();
+        }
+      }
+
+      function startPlayback() {
+        if (state.ticks.length <= 1) {
+          return;
+        }
+        els.play.textContent = "Pause";
+        const interval = Math.max(120, 1000 / Number(els.speed.value || 1));
+        state.playbackTimer = window.setInterval(() => {
+          if (state.currentTickIndex >= state.ticks.length - 1) {
+            stopPlayback();
+            return;
+          }
+          jumpToIndex(state.currentTickIndex + 1);
+        }, interval);
+      }
+
+      function stopPlayback() {
+        if (state.playbackTimer) {
+          window.clearInterval(state.playbackTimer);
+          state.playbackTimer = null;
+        }
+        els.play.textContent = "Play";
+      }
+
+      function renderAtCurrentTick() {
+        const tick = state.ticks[state.currentTickIndex];
+        const snapshot = replayUntil(tick);
+        state.currentSnapshot = snapshot;
+
+        renderControls();
+        renderMap(snapshot, tick);
+        renderSummary(snapshot, tick);
+        renderSelected(snapshot);
+        renderWarnings(snapshot);
+        renderEventLog(tick);
+      }
+
+      function replayUntil(tick) {
+        const snapshot = {
+          map: null,
+          units: new Map(),
+          currentEvents: state.eventsByTick.get(tick) || [],
+          invalidApplied: []
+        };
+
+        for (const event of state.sortedEvents) {
+          const nextTick = eventTick(event);
+          if (nextTick === null) {
+            continue;
+          }
+
+          if (nextTick > tick) {
+            break;
+          }
+
+          if (state.invalidEventIndexes.has(event.__index)) {
+            snapshot.invalidApplied.push(event);
+            continue;
+          }
+
+          applyEvent(snapshot, event);
+        }
+
+        return snapshot;
+      }
+
+      function applyEvent(snapshot, event) {
+        if (!supportedEvents.has(event.event)) {
+          return;
+        }
+
+        switch (event.event) {
+          case "MAP_CREATED":
+            snapshot.map = {
+              width: Math.max(1, Math.floor(event.width)),
+              height: Math.max(1, Math.floor(event.height))
+            };
+            break;
+          case "UNIT_SPAWNED":
+            snapshot.units.set(event.unitId, {
+              id: event.unitId,
+              type: event.unitType,
+              x: Math.floor(event.x),
+              y: Math.floor(event.y),
+              hp: null,
+              alive: true,
+              lastEvent: event.event,
+              marchTarget: null
+            });
+            break;
+          case "MARCH_STARTED":
+            updateUnit(snapshot, event.unitId, {
+              x: Math.floor(event.x),
+              y: Math.floor(event.y),
+              lastEvent: event.event,
+              marchTarget: { x: Math.floor(event.targetX), y: Math.floor(event.targetY) }
+            });
+            break;
+          case "MARCH_ENDED":
+          case "UNIT_MOVED":
+            updateUnit(snapshot, event.unitId, {
+              x: Math.floor(event.x),
+              y: Math.floor(event.y),
+              lastEvent: event.event,
+              marchTarget: null
+            });
+            break;
+          case "UNIT_ATTACKED":
+            updateUnit(snapshot, event.sourceUnitId, { lastEvent: event.event });
+            updateUnit(snapshot, event.targetUnitId, {
+              hp: event.resultingValue,
+              lastEvent: event.event
+            });
+            break;
+          case "UNIT_HEALED":
+            updateUnit(snapshot, event.sourceUnitId, { lastEvent: event.event });
+            updateUnit(snapshot, event.targetUnitId, {
+              hp: event.resultingValue,
+              alive: true,
+              lastEvent: event.event
+            });
+            break;
+          case "UNIT_DIED":
+            updateUnit(snapshot, event.unitId, {
+              alive: false,
+              lastEvent: event.event,
+              marchTarget: null
+            });
+            break;
+          default:
+            break;
+        }
+      }
+
+      function updateUnit(snapshot, unitId, patch) {
+        const unit = snapshot.units.get(unitId);
+        if (!unit) {
+          return;
+        }
+        Object.assign(unit, patch);
+      }
+
+      function renderControls() {
+        const hasTrace = state.ticks.length > 0;
+        const atStart = state.currentTickIndex <= 0;
+        const atEnd = state.currentTickIndex >= state.ticks.length - 1;
+        els.reset.disabled = !hasTrace || atStart;
+        els.prev.disabled = !hasTrace || atStart;
+        els.next.disabled = !hasTrace || atEnd;
+        els.play.disabled = !hasTrace || state.ticks.length <= 1 || atEnd;
+        els.tick.textContent = hasTrace
+          ? `Tick: ${state.ticks[state.currentTickIndex]} (${state.currentTickIndex + 1}/${state.ticks.length})`
+          : "Tick: none";
+      }
+
+      function renderMap(snapshot, tick) {
+        if (!snapshot.map) {
+          els.map.className = "map-grid empty";
+          els.map.textContent = "MAP_CREATED has not been applied yet.";
+          els.mapMeta.textContent = "";
+          return;
+        }
+
+        const involved = involvedUnitIds(snapshot.currentEvents);
+        const unitsByCell = new Map();
+        for (const unit of snapshot.units.values()) {
+          if (!Number.isFinite(unit.x) || !Number.isFinite(unit.y)) {
+            continue;
+          }
+          const key = `${unit.x},${unit.y}`;
+          if (!unitsByCell.has(key)) {
+            unitsByCell.set(key, []);
+          }
+          unitsByCell.get(key).push(unit);
+        }
+
+        els.map.className = "map-grid";
+        els.map.style.gridTemplateColumns = `repeat(${snapshot.map.width}, minmax(48px, 58px))`;
+        els.map.style.gridTemplateRows = `repeat(${snapshot.map.height}, minmax(48px, 58px))`;
+        els.map.innerHTML = "";
+        els.mapMeta.innerHTML = `
+          <span>Map: ${snapshot.map.width} x ${snapshot.map.height}</span>
+          <span>Tick events: ${snapshot.currentEvents.length}</span>
+          <span>Visible units: ${snapshot.units.size}</span>
+        `;
+
+        for (let y = 0; y < snapshot.map.height; y += 1) {
+          for (let x = 0; x < snapshot.map.width; x += 1) {
+            const cell = document.createElement("div");
+            cell.className = "cell";
+            const coord = document.createElement("span");
+            coord.className = "cell-coord";
+            coord.textContent = `${x},${y}`;
+            cell.appendChild(coord);
+
+            const stack = document.createElement("div");
+            stack.className = "unit-stack";
+            const units = unitsByCell.get(`${x},${y}`) || [];
+            units.sort((a, b) => a.id - b.id);
+            for (const unit of units) {
+              stack.appendChild(renderUnitToken(unit, involved.has(unit.id)));
+            }
+            cell.appendChild(stack);
+            els.map.appendChild(cell);
+          }
+        }
+      }
+
+      function renderUnitToken(unit, highlighted) {
+        const token = document.createElement("button");
+        token.type = "button";
+        token.className = [
+          "unit",
+          unitTypeClass(unit.type),
+          highlighted ? "highlight" : "",
+          state.selectedUnitId === unit.id ? "selected" : "",
+          unit.alive ? "" : "dead"
+        ].filter(Boolean).join(" ");
+        token.textContent = unitLabel(unit);
+        token.title = `${unit.type} #${unit.id}`;
+        token.addEventListener("click", () => {
+          state.selectedUnitId = unit.id;
+          renderAtCurrentTick();
+        });
+        return token;
+      }
+
+      function unitTypeClass(type) {
+        const normalized = String(type || "").toLowerCase();
+        if (["swordsman", "hunter", "healer", "tower", "mine", "raven"].includes(normalized)) {
+          return normalized;
+        }
+        return "unknown";
+      }
+
+      function unitLabel(unit) {
+        const prefix = String(unit.type || "U").slice(0, 1).toUpperCase();
+        return `${prefix}${unit.id}`;
+      }
+
+      function involvedUnitIds(events) {
+        const ids = new Set();
+        for (const event of events) {
+          for (const key of ["unitId", "sourceUnitId", "targetUnitId"]) {
+            if (typeof event[key] === "number") {
+              ids.add(event[key]);
+            }
+          }
+        }
+        return ids;
+      }
+
+      function renderSummary(snapshot, tick) {
+        const alive = [...snapshot.units.values()].filter((unit) => unit.alive).length;
+        const dead = snapshot.units.size - alive;
+        const maxTick = state.ticks.length ? state.ticks[state.ticks.length - 1] : 0;
+        const rows = [
+          ["Current tick", tick],
+          ["Ticks", state.ticks.length],
+          ["Final tick", maxTick],
+          ["Events", state.events.length],
+          ["Spawned", state.totalCounts.get("UNIT_SPAWNED") || 0],
+          ["Alive", alive],
+          ["Dead", dead],
+          ["Moves", state.totalCounts.get("UNIT_MOVED") || 0],
+          ["Marches", state.totalCounts.get("MARCH_STARTED") || 0],
+          ["Attacks", state.totalCounts.get("UNIT_ATTACKED") || 0],
+          ["Heals", state.totalCounts.get("UNIT_HEALED") || 0],
+          ["Deaths", state.totalCounts.get("UNIT_DIED") || 0]
+        ];
+        els.summary.innerHTML = rows.map(([key, value]) => `<div><dt>${key}</dt><dd>${value}</dd></div>`).join("");
+      }
+
+      function renderSelected(snapshot) {
+        if (state.selectedUnitId === null) {
+          els.selected.innerHTML = `<div><dt>Status</dt><dd>none</dd></div>`;
+          return;
+        }
+
+        const unit = snapshot.units.get(state.selectedUnitId);
+        if (!unit) {
+          els.selected.innerHTML = `<div><dt>Status</dt><dd>not present</dd></div>`;
+          return;
+        }
+
+        const target = unit.marchTarget ? `${unit.marchTarget.x},${unit.marchTarget.y}` : "none";
+        const hp = unit.hp === null ? "unknown" : unit.hp;
+        const rows = [
+          ["ID", unit.id],
+          ["Type", unit.type],
+          ["Position", `${unit.x},${unit.y}`],
+          ["HP", hp],
+          ["State", unit.alive ? "alive" : "dead"],
+          ["March target", target],
+          ["Last event", unit.lastEvent]
+        ];
+        els.selected.innerHTML = rows.map(([key, value]) => `<div><dt>${key}</dt><dd>${value}</dd></div>`).join("");
+      }
+
+      function renderWarnings(snapshot) {
+        const warnings = [...state.validationWarnings];
+        for (const event of snapshot.invalidApplied) {
+          warnings.push(`${event.event || "INVALID"} at #${event.__index + 1} was skipped during replay.`);
+        }
+
+        if (warnings.length === 0) {
+          els.warnings.innerHTML = `<li>No warnings.</li>`;
+          return;
+        }
+
+        els.warnings.innerHTML = warnings
+          .slice(0, 12)
+          .map((warning) => `<li>${escapeHtml(warning)}</li>`)
+          .join("");
+      }
+
+      function renderEventLog(tick) {
+        els.log.innerHTML = "";
+        if (state.sortedEvents.length === 0) {
+          els.log.innerHTML = `<li><button type="button" disabled><span class="event-line">No events loaded.</span></button></li>`;
+          return;
+        }
+
+        for (const event of state.sortedEvents) {
+          const item = document.createElement("li");
+          const button = document.createElement("button");
+          button.type = "button";
+          const nextTick = eventTick(event);
+          button.className = nextTick === tick ? "current" : nextTick > tick ? "future" : "";
+          button.disabled = nextTick === null;
+          button.addEventListener("click", () => jumpToTick(nextTick));
+
+          const line = document.createElement("span");
+          line.className = "event-line";
+          const warning = state.invalidEventIndexes.has(event.__index) ? `<span class="event-warning">warning</span>` : "";
+          line.innerHTML = `
+            <span class="event-name">T${nextTick ?? "?"} ${escapeHtml(event.event || "INVALID")}</span>${warning}
+            <span class="event-detail">${escapeHtml(formatEvent(event))}</span>
+          `;
+
+          button.appendChild(line);
+          item.appendChild(button);
+          els.log.appendChild(item);
+        }
+      }
+
+      function formatEvent(event) {
+        switch (event.event) {
+          case "MAP_CREATED":
+            return `map ${event.width}x${event.height}`;
+          case "UNIT_SPAWNED":
+            return `unit #${event.unitId} ${event.unitType} at ${event.x},${event.y}`;
+          case "MARCH_STARTED":
+            return `unit #${event.unitId} from ${event.x},${event.y} to ${event.targetX},${event.targetY}`;
+          case "MARCH_ENDED":
+            return `unit #${event.unitId} ended at ${event.x},${event.y}`;
+          case "UNIT_MOVED":
+            return `unit #${event.unitId} moved to ${event.x},${event.y}`;
+          case "UNIT_ATTACKED":
+            return `unit #${event.sourceUnitId} hit #${event.targetUnitId} for ${event.amount}; hp ${event.resultingValue}`;
+          case "UNIT_HEALED":
+            return `unit #${event.sourceUnitId} healed #${event.targetUnitId} for ${event.amount}; hp ${event.resultingValue}`;
+          case "UNIT_DIED":
+            return `unit #${event.unitId} died`;
+          default:
+            return JSON.stringify(stripPrivateFields(event));
+        }
+      }
+
+      function stripPrivateFields(event) {
+        const copy = { ...event };
+        delete copy.__index;
+        return copy;
+      }
+
+      function renderEmpty() {
+        stopPlayback();
+        renderControls();
+        els.map.className = "map-grid empty";
+        els.map.removeAttribute("style");
+        els.map.textContent = "No trace loaded.";
+        els.mapMeta.textContent = "";
+        els.summary.innerHTML = `<div><dt>Status</dt><dd>not loaded</dd></div>`;
+        els.selected.innerHTML = `<div><dt>Status</dt><dd>none</dd></div>`;
+        els.warnings.innerHTML = `<li>No warnings.</li>`;
+        els.log.innerHTML = `<li><button type="button" disabled><span class="event-line">No events loaded.</span></button></li>`;
+      }
+
+      function setStatus(message, level) {
+        els.status.className = `status ${level === "warning" ? "warning" : ""}`.trim();
+        els.status.textContent = message;
+      }
+
+      function setError(message) {
+        els.status.className = "status error";
+        els.status.textContent = message;
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      window.BattleTraceReplayViewer = {
+        loadTraceText: loadTrace,
+        getStateSummary: () => ({
+          events: state.events.length,
+          ticks: state.ticks.length,
+          currentTick: state.ticks[state.currentTickIndex] ?? null,
+          selectedUnitId: state.selectedUnitId
+        })
+      };
+    })();
+  </script>
+</body>
+</html>

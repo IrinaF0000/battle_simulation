@@ -13,6 +13,12 @@ Trace summary:
 ./build/battle_sim inspect trace.json
 ```
 
+Visual replay:
+
+```text
+Open tools/replay-viewer/index.html and load trace.json.
+```
+
 The trace is a JSON array. Each record contains `tick`, `event`, and event-specific fields.
 
 Small trace excerpt:

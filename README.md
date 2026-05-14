@@ -51,6 +51,8 @@ Trace and inspect flow:
 ./build/battle_sim inspect trace.json
 ```
 
+For visual replay, open `tools/replay-viewer/index.html` and load the generated trace.
+
 Enable warnings as errors locally when tightening changes:
 
 ```bash
@@ -87,6 +89,7 @@ Deaths: 5
 - Scheduled battle loop through `EngineRunner` and `Scheduler`.
 - Deterministic tests, scenario replay checks, architecture boundary checker, and CMake presets.
 - Optional JSON traces, `inspect` summaries, and a documented AI-agent workflow with scoped review gates.
+- Static replay viewer for stepping through JSON trace events.
 
 ## Modules
 
@@ -114,6 +117,7 @@ AI tools may assist with decomposition, navigation, implementation, test ideas, 
 - `docs/configuration.md`
 - `docs/data-driven-archetypes.md`
 - `docs/json-trace.md`
+- `tools/replay-viewer/README.md`
 - `docs/agent-workflow.md`
 - `docs/portfolio-summary.md`
 
