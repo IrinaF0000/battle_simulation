@@ -34,13 +34,24 @@ namespace battle_sim::features::battle
 				auto* health = healthOf(world, target);
 				require(health != nullptr && health->hp > 0, "Cannot apply battle heal without positive health");
 
+				const auto* sourcePositionComponent = positionOf(world, source);
+				const auto* targetPositionComponent = positionOf(world, target);
+				const auto sourcePosition = sourcePositionComponent ? sourcePositionComponent->value : core::Position{};
+				const auto targetPosition = targetPositionComponent ? targetPositionComponent->value : core::Position{};
+				const int previousHealth = health->hp;
 				health->hp += amount;
-			},
-			[source, target, amount](core::engine::GameContext& game) {
-				const auto* health = healthOf(game.world, target);
-				const int resultingHealth = health ? health->hp : 0;
+				const int resultingHealth = health->hp;
 				game.events.publish(
-					features::battle::EffectAppliedEvent{game.world.tick(), source, target, features::battle::EffectType::Heal, amount, resultingHealth});
+					features::battle::EffectAppliedEvent{
+						game.world.tick(),
+						source,
+						target,
+						features::battle::EffectType::Heal,
+						amount,
+						resultingHealth,
+						sourcePosition,
+						targetPosition,
+						previousHealth});
 			}};
 	}
 }

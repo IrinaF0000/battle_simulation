@@ -27,7 +27,7 @@ python tools/local-runner/server.py --exe build/battle_sim
 
 Then open `http://127.0.0.1:8765`. The local runner generates a scenario command file, runs `battle_sim <commands-file> --trace-json <trace-file>`, and loads the resulting trace in the viewer.
 
-The trace is a JSON array. Each record contains `tick`, `event`, and event-specific fields.
+The trace is a JSON array. Each record contains `tick`, `event`, and event-specific fields. Combat actions are emitted explicitly; consumers should not infer attacks or healing from hit-point changes.
 
 Small trace excerpt:
 
@@ -60,5 +60,13 @@ Current event names:
 - `UNIT_ATTACKED`
 - `UNIT_HEALED`
 - `UNIT_DIED`
+
+Combat visualization fields:
+
+- `UNIT_MOVED`: `unitId`, `fromX`, `fromY`, `x`, `y`
+- `UNIT_ATTACKED` and `UNIT_HEALED`: `sourceUnitId`, `targetUnitId`, `sourceX`, `sourceY`, `targetX`, `targetY`, `amount`, `targetHpBefore`, `targetHpAfter`, `resultingValue`
+- `UNIT_DIED`: `unitId`, `x`, `y`, `reason`
+
+The replay viewer uses these fields for current-tick movement, attack, healing, death, and explosion effects. Older traces with missing visualization fields still load; the viewer falls back to unit positions where possible.
 
 The format is intended for inspection and regression tooling, not as a gameplay scripting API.

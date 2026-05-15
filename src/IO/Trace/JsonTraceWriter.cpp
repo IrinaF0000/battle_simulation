@@ -48,6 +48,18 @@ namespace battle_sim::io::trace
 			output << "    \"event\": ";
 			writeString(output, eventName);
 		}
+
+		std::string_view removalReasonName(features::battle::RemovalReason reason)
+		{
+			switch (reason)
+			{
+			case features::battle::RemovalReason::Death:
+				return "Death";
+			case features::battle::RemovalReason::Destroyed:
+				return "Destroyed";
+			}
+			return "Unknown";
+		}
 	}
 
 	JsonTraceWriter::JsonTraceWriter(std::ostream& output)
@@ -124,6 +136,8 @@ namespace battle_sim::io::trace
 			beginRecord();
 			writeHeader(_output, entityMoved->tick, "UNIT_MOVED");
 			_output << ",\n    \"unitId\": " << entityMoved->entity << ",\n";
+			_output << "    \"fromX\": " << entityMoved->from.x << ",\n";
+			_output << "    \"fromY\": " << entityMoved->from.y << ",\n";
 			_output << "    \"x\": " << entityMoved->to.x << ",\n";
 			_output << "    \"y\": " << entityMoved->to.y;
 			endRecord();
@@ -134,7 +148,13 @@ namespace battle_sim::io::trace
 			writeHeader(_output, effectApplied->tick, effectApplied->effect == EffectType::Damage ? "UNIT_ATTACKED" : "UNIT_HEALED");
 			_output << ",\n    \"sourceUnitId\": " << effectApplied->source << ",\n";
 			_output << "    \"targetUnitId\": " << effectApplied->target << ",\n";
+			_output << "    \"sourceX\": " << effectApplied->sourcePosition.x << ",\n";
+			_output << "    \"sourceY\": " << effectApplied->sourcePosition.y << ",\n";
+			_output << "    \"targetX\": " << effectApplied->targetPosition.x << ",\n";
+			_output << "    \"targetY\": " << effectApplied->targetPosition.y << ",\n";
 			_output << "    \"amount\": " << effectApplied->amount << ",\n";
+			_output << "    \"targetHpBefore\": " << effectApplied->previousValue << ",\n";
+			_output << "    \"targetHpAfter\": " << effectApplied->resultingValue << ",\n";
 			_output << "    \"resultingValue\": " << effectApplied->resultingValue;
 			endRecord();
 		}
@@ -142,7 +162,11 @@ namespace battle_sim::io::trace
 		{
 			beginRecord();
 			writeHeader(_output, entityRemoved->tick, "UNIT_DIED");
-			_output << ",\n    \"unitId\": " << entityRemoved->entity;
+			_output << ",\n    \"unitId\": " << entityRemoved->entity << ",\n";
+			_output << "    \"x\": " << entityRemoved->position.x << ",\n";
+			_output << "    \"y\": " << entityRemoved->position.y << ",\n";
+			_output << "    \"reason\": ";
+			writeString(_output, removalReasonName(entityRemoved->reason));
 			endRecord();
 		}
 	}

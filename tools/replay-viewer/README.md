@@ -1,6 +1,6 @@
 # Replay Viewer
 
-`tools/replay-viewer/index.html` is a static browser tool for inspecting deterministic JSON traces from the battle simulator.
+`tools/replay-viewer/index.html` is a static browser tool for inspecting deterministic JSON traces from the battle simulator. It reconstructs the map, keeps a readable combat log, and renders current-tick movement, attack, healing, death, and explosion effects.
 
 A copy is also published under `docs/replay-viewer/` so GitHub Pages can host a static project demo.
 
@@ -65,6 +65,8 @@ Run artifacts are written under `tools/local-runner/runs/` and include the gener
 - `UNIT_DIED`
 
 Unsupported events stay visible in the event log and are skipped by the map replay.
+
+Combat effects come from explicit trace events, not inferred hit-point deltas. Attack and heal records include source/target coordinates plus target HP before and after; move records include `fromX/fromY`; death records include position and reason.
 
 ## Scope
 

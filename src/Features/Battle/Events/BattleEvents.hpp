@@ -67,6 +67,9 @@ namespace battle_sim::features::battle
 		EffectType effect{EffectType::Damage};
 		int amount{};
 		int resultingValue{};
+		core::Position sourcePosition{};
+		core::Position targetPosition{};
+		int previousValue{};
 	};
 
 	struct EntityRemovedEvent
@@ -74,5 +77,6 @@ namespace battle_sim::features::battle
 		core::Tick tick{};
 		core::EntityId entity{};
 		RemovalReason reason{RemovalReason::Death};
+		core::Position position{};
 	};
 }

@@ -10,53 +10,45 @@
     "event": "UNIT_SPAWNED",
     "unitId": 1,
     "unitType": "Swordsman",
-    "x": 4,
+    "x": 0,
     "y": 2
   },
   {
     "tick": 1,
     "event": "UNIT_SPAWNED",
     "unitId": 2,
-    "unitType": "Swordsman",
-    "x": 1,
-    "y": 1
+    "unitType": "Hunter",
+    "x": 7,
+    "y": 2
   },
   {
     "tick": 1,
     "event": "UNIT_SPAWNED",
     "unitId": 3,
-    "unitType": "Hunter",
-    "x": 1,
-    "y": 3
+    "unitType": "Tower",
+    "x": 4,
+    "y": 1
   },
   {
     "tick": 1,
     "event": "UNIT_SPAWNED",
     "unitId": 4,
-    "unitType": "Tower",
-    "x": 3,
-    "y": 0
-  },
-  {
-    "tick": 1,
-    "event": "UNIT_SPAWNED",
-    "unitId": 5,
     "unitType": "Healer",
-    "x": 4,
-    "y": 0
-  },
-  {
-    "tick": 1,
-    "event": "UNIT_SPAWNED",
-    "unitId": 6,
-    "unitType": "Mine",
-    "x": 2,
+    "x": 1,
     "y": 4
   },
   {
     "tick": 1,
     "event": "UNIT_SPAWNED",
-    "unitId": 7,
+    "unitId": 5,
+    "unitType": "Mine",
+    "x": 3,
+    "y": 2
+  },
+  {
+    "tick": 1,
+    "event": "UNIT_SPAWNED",
+    "unitId": 6,
     "unitType": "Raven",
     "x": 6,
     "y": 0
@@ -65,7 +57,7 @@
     "tick": 1,
     "event": "MARCH_STARTED",
     "unitId": 1,
-    "x": 4,
+    "x": 0,
     "y": 2,
     "targetX": 3,
     "targetY": 2
@@ -73,26 +65,17 @@
   {
     "tick": 1,
     "event": "MARCH_STARTED",
-    "unitId": 2,
+    "unitId": 4,
     "x": 1,
-    "y": 1,
-    "targetX": 6,
-    "targetY": 1
+    "y": 4,
+    "targetX": 2,
+    "targetY": 4
   },
   {
     "tick": 1,
     "event": "MARCH_STARTED",
-    "unitId": 3,
-    "x": 1,
-    "y": 3,
-    "targetX": 6,
-    "targetY": 3
-  },
-  {
-    "tick": 1,
-    "event": "MARCH_STARTED",
-    "unitId": 5,
-    "x": 4,
+    "unitId": 6,
+    "x": 6,
     "y": 0,
     "targetX": 3,
     "targetY": 0
@@ -100,333 +83,563 @@
   {
     "tick": 1,
     "event": "MARCH_STARTED",
-    "unitId": 7,
-    "x": 6,
-    "y": 0,
-    "targetX": 1,
-    "targetY": 0
-  },
-  {
-    "tick": 2,
-    "event": "UNIT_MOVED",
-    "unitId": 1,
-    "x": 3,
-    "y": 2
-  },
-  {
-    "tick": 2,
-    "event": "MARCH_ENDED",
-    "unitId": 1,
-    "x": 3,
-    "y": 2
-  },
-  {
-    "tick": 2,
-    "event": "UNIT_MOVED",
     "unitId": 2,
-    "x": 2,
-    "y": 1
+    "x": 7,
+    "y": 2,
+    "targetX": 4,
+    "targetY": 2
+  },
+  {
+    "tick": 2,
+    "event": "UNIT_MOVED",
+    "unitId": 1,
+    "fromX": 0,
+    "fromY": 2,
+    "x": 1,
+    "y": 2
+  },
+  {
+    "tick": 2,
+    "event": "UNIT_ATTACKED",
+    "sourceUnitId": 2,
+    "targetUnitId": 6,
+    "sourceX": 7,
+    "sourceY": 2,
+    "targetX": 6,
+    "targetY": 0,
+    "amount": 4,
+    "targetHpBefore": 6,
+    "targetHpAfter": 2,
+    "resultingValue": 2
   },
   {
     "tick": 2,
     "event": "UNIT_ATTACKED",
     "sourceUnitId": 3,
     "targetUnitId": 4,
-    "amount": 4,
+    "sourceX": 4,
+    "sourceY": 1,
+    "targetX": 1,
+    "targetY": 4,
+    "amount": 2,
+    "targetHpBefore": 8,
+    "targetHpAfter": 6,
     "resultingValue": 6
   },
   {
     "tick": 2,
-    "event": "UNIT_ATTACKED",
-    "sourceUnitId": 4,
-    "targetUnitId": 7,
-    "amount": 2,
-    "resultingValue": 4
-  },
-  {
-    "tick": 2,
     "event": "UNIT_HEALED",
-    "sourceUnitId": 5,
-    "targetUnitId": 2,
+    "sourceUnitId": 4,
+    "targetUnitId": 1,
+    "sourceX": 1,
+    "sourceY": 4,
+    "targetX": 1,
+    "targetY": 2,
     "amount": 2,
+    "targetHpBefore": 12,
+    "targetHpAfter": 14,
     "resultingValue": 14
   },
   {
     "tick": 2,
     "event": "UNIT_MOVED",
-    "unitId": 7,
+    "unitId": 6,
+    "fromX": 6,
+    "fromY": 0,
     "x": 4,
     "y": 1
   },
   {
     "tick": 3,
-    "event": "UNIT_ATTACKED",
-    "sourceUnitId": 1,
-    "targetUnitId": 2,
-    "amount": 3,
-    "resultingValue": 11
+    "event": "UNIT_MOVED",
+    "unitId": 1,
+    "fromX": 1,
+    "fromY": 2,
+    "x": 2,
+    "y": 2
   },
   {
     "tick": 3,
     "event": "UNIT_ATTACKED",
     "sourceUnitId": 2,
-    "targetUnitId": 1,
-    "amount": 3,
-    "resultingValue": 9
+    "targetUnitId": 3,
+    "sourceX": 7,
+    "sourceY": 2,
+    "targetX": 4,
+    "targetY": 1,
+    "amount": 4,
+    "targetHpBefore": 10,
+    "targetHpAfter": 6,
+    "resultingValue": 6
   },
   {
     "tick": 3,
     "event": "UNIT_ATTACKED",
     "sourceUnitId": 3,
-    "targetUnitId": 4,
-    "amount": 4,
-    "resultingValue": 2
-  },
-  {
-    "tick": 3,
-    "event": "UNIT_ATTACKED",
-    "sourceUnitId": 4,
-    "targetUnitId": 3,
+    "targetUnitId": 2,
+    "sourceX": 4,
+    "sourceY": 1,
+    "targetX": 7,
+    "targetY": 2,
     "amount": 2,
+    "targetHpBefore": 9,
+    "targetHpAfter": 7,
     "resultingValue": 7
   },
   {
     "tick": 3,
     "event": "UNIT_HEALED",
-    "sourceUnitId": 5,
-    "targetUnitId": 2,
-    "amount": 2,
-    "resultingValue": 13
-  },
-  {
-    "tick": 3,
-    "event": "UNIT_ATTACKED",
-    "sourceUnitId": 6,
+    "sourceUnitId": 4,
     "targetUnitId": 1,
+    "sourceX": 1,
+    "sourceY": 4,
+    "targetX": 2,
+    "targetY": 2,
     "amount": 2,
-    "resultingValue": 7
+    "targetHpBefore": 14,
+    "targetHpAfter": 16,
+    "resultingValue": 16
   },
   {
     "tick": 3,
     "event": "UNIT_ATTACKED",
-    "sourceUnitId": 6,
-    "targetUnitId": 2,
+    "sourceUnitId": 5,
+    "targetUnitId": 1,
+    "sourceX": 3,
+    "sourceY": 2,
+    "targetX": 2,
+    "targetY": 2,
     "amount": 2,
-    "resultingValue": 11
+    "targetHpBefore": 16,
+    "targetHpAfter": 14,
+    "resultingValue": 14
   },
   {
     "tick": 3,
     "event": "UNIT_ATTACKED",
-    "sourceUnitId": 6,
+    "sourceUnitId": 5,
     "targetUnitId": 3,
+    "sourceX": 3,
+    "sourceY": 2,
+    "targetX": 4,
+    "targetY": 1,
     "amount": 2,
+    "targetHpBefore": 6,
+    "targetHpAfter": 4,
+    "resultingValue": 4
+  },
+  {
+    "tick": 3,
+    "event": "UNIT_ATTACKED",
+    "sourceUnitId": 5,
+    "targetUnitId": 4,
+    "sourceX": 3,
+    "sourceY": 2,
+    "targetX": 1,
+    "targetY": 4,
+    "amount": 2,
+    "targetHpBefore": 6,
+    "targetHpAfter": 4,
+    "resultingValue": 4
+  },
+  {
+    "tick": 3,
+    "event": "UNIT_ATTACKED",
+    "sourceUnitId": 5,
+    "targetUnitId": 6,
+    "sourceX": 3,
+    "sourceY": 2,
+    "targetX": 4,
+    "targetY": 1,
+    "amount": 2,
+    "targetHpBefore": 2,
+    "targetHpAfter": 0,
+    "resultingValue": 0
+  },
+  {
+    "tick": 3,
+    "event": "UNIT_DIED",
+    "unitId": 6,
+    "x": 4,
+    "y": 1,
+    "reason": "Death"
+  },
+  {
+    "tick": 3,
+    "event": "UNIT_DIED",
+    "unitId": 5,
+    "x": 3,
+    "y": 2,
+    "reason": "Destroyed"
+  },
+  {
+    "tick": 3,
+    "event": "UNIT_MOVED",
+    "unitId": 6,
+    "fromX": 4,
+    "fromY": 1,
+    "x": 3,
+    "y": 0
+  },
+  {
+    "tick": 3,
+    "event": "MARCH_ENDED",
+    "unitId": 6,
+    "x": 3,
+    "y": 0
+  },
+  {
+    "tick": 4,
+    "event": "UNIT_MOVED",
+    "unitId": 1,
+    "fromX": 2,
+    "fromY": 2,
+    "x": 3,
+    "y": 2
+  },
+  {
+    "tick": 4,
+    "event": "MARCH_ENDED",
+    "unitId": 1,
+    "x": 3,
+    "y": 2
+  },
+  {
+    "tick": 4,
+    "event": "UNIT_ATTACKED",
+    "sourceUnitId": 2,
+    "targetUnitId": 3,
+    "sourceX": 7,
+    "sourceY": 2,
+    "targetX": 4,
+    "targetY": 1,
+    "amount": 4,
+    "targetHpBefore": 4,
+    "targetHpAfter": 0,
+    "resultingValue": 0
+  },
+  {
+    "tick": 4,
+    "event": "UNIT_DIED",
+    "unitId": 3,
+    "x": 4,
+    "y": 1,
+    "reason": "Death"
+  },
+  {
+    "tick": 4,
+    "event": "UNIT_ATTACKED",
+    "sourceUnitId": 3,
+    "targetUnitId": 2,
+    "sourceX": 4,
+    "sourceY": 1,
+    "targetX": 7,
+    "targetY": 2,
+    "amount": 2,
+    "targetHpBefore": 7,
+    "targetHpAfter": 5,
     "resultingValue": 5
   },
   {
-    "tick": 3,
-    "event": "UNIT_ATTACKED",
-    "sourceUnitId": 6,
-    "targetUnitId": 7,
-    "amount": 2,
-    "resultingValue": 2
-  },
-  {
-    "tick": 3,
-    "event": "UNIT_DIED",
-    "unitId": 6
-  },
-  {
-    "tick": 3,
-    "event": "UNIT_ATTACKED",
-    "sourceUnitId": 7,
-    "targetUnitId": 4,
-    "amount": 2,
-    "resultingValue": 0
-  },
-  {
-    "tick": 3,
-    "event": "UNIT_DIED",
-    "unitId": 4
-  },
-  {
-    "tick": 4,
-    "event": "UNIT_ATTACKED",
-    "sourceUnitId": 1,
-    "targetUnitId": 2,
-    "amount": 3,
-    "resultingValue": 8
-  },
-  {
-    "tick": 4,
-    "event": "UNIT_ATTACKED",
-    "sourceUnitId": 2,
-    "targetUnitId": 1,
-    "amount": 3,
-    "resultingValue": 4
-  },
-  {
-    "tick": 4,
-    "event": "UNIT_ATTACKED",
-    "sourceUnitId": 3,
-    "targetUnitId": 1,
-    "amount": 4,
-    "resultingValue": 0
-  },
-  {
-    "tick": 4,
-    "event": "UNIT_DIED",
-    "unitId": 1
-  },
-  {
     "tick": 4,
     "event": "UNIT_HEALED",
-    "sourceUnitId": 5,
-    "targetUnitId": 7,
+    "sourceUnitId": 4,
+    "targetUnitId": 1,
+    "sourceX": 1,
+    "sourceY": 4,
+    "targetX": 3,
+    "targetY": 2,
     "amount": 2,
-    "resultingValue": 4
-  },
-  {
-    "tick": 4,
-    "event": "UNIT_ATTACKED",
-    "sourceUnitId": 7,
-    "targetUnitId": 5,
-    "amount": 2,
-    "resultingValue": 6
+    "targetHpBefore": 14,
+    "targetHpAfter": 16,
+    "resultingValue": 16
   },
   {
     "tick": 5,
     "event": "UNIT_MOVED",
     "unitId": 2,
-    "x": 3,
+    "fromX": 7,
+    "fromY": 2,
+    "x": 6,
     "y": 1
   },
   {
     "tick": 5,
-    "event": "UNIT_ATTACKED",
-    "sourceUnitId": 3,
-    "targetUnitId": 2,
-    "amount": 4,
-    "resultingValue": 4
-  },
-  {
-    "tick": 5,
     "event": "UNIT_HEALED",
-    "sourceUnitId": 5,
-    "targetUnitId": 7,
+    "sourceUnitId": 4,
+    "targetUnitId": 1,
+    "sourceX": 1,
+    "sourceY": 4,
+    "targetX": 3,
+    "targetY": 2,
     "amount": 2,
-    "resultingValue": 6
-  },
-  {
-    "tick": 5,
-    "event": "UNIT_ATTACKED",
-    "sourceUnitId": 7,
-    "targetUnitId": 5,
-    "amount": 2,
-    "resultingValue": 4
+    "targetHpBefore": 16,
+    "targetHpAfter": 18,
+    "resultingValue": 18
   },
   {
     "tick": 6,
     "event": "UNIT_ATTACKED",
     "sourceUnitId": 2,
-    "targetUnitId": 5,
-    "amount": 3,
-    "resultingValue": 1
-  },
-  {
-    "tick": 6,
-    "event": "UNIT_ATTACKED",
-    "sourceUnitId": 3,
-    "targetUnitId": 2,
+    "targetUnitId": 1,
+    "sourceX": 6,
+    "sourceY": 1,
+    "targetX": 3,
+    "targetY": 2,
     "amount": 4,
-    "resultingValue": 0
-  },
-  {
-    "tick": 6,
-    "event": "UNIT_DIED",
-    "unitId": 2
+    "targetHpBefore": 18,
+    "targetHpAfter": 14,
+    "resultingValue": 14
   },
   {
     "tick": 6,
     "event": "UNIT_HEALED",
-    "sourceUnitId": 5,
-    "targetUnitId": 7,
+    "sourceUnitId": 4,
+    "targetUnitId": 1,
+    "sourceX": 1,
+    "sourceY": 4,
+    "targetX": 3,
+    "targetY": 2,
     "amount": 2,
-    "resultingValue": 8
-  },
-  {
-    "tick": 6,
-    "event": "UNIT_ATTACKED",
-    "sourceUnitId": 7,
-    "targetUnitId": 5,
-    "amount": 2,
-    "resultingValue": -1
-  },
-  {
-    "tick": 6,
-    "event": "UNIT_DIED",
-    "unitId": 5
+    "targetHpBefore": 14,
+    "targetHpAfter": 16,
+    "resultingValue": 16
   },
   {
     "tick": 7,
+    "event": "UNIT_ATTACKED",
+    "sourceUnitId": 2,
+    "targetUnitId": 1,
+    "sourceX": 6,
+    "sourceY": 1,
+    "targetX": 3,
+    "targetY": 2,
+    "amount": 4,
+    "targetHpBefore": 16,
+    "targetHpAfter": 12,
+    "resultingValue": 12
+  },
+  {
+    "tick": 7,
+    "event": "UNIT_HEALED",
+    "sourceUnitId": 4,
+    "targetUnitId": 1,
+    "sourceX": 1,
+    "sourceY": 4,
+    "targetX": 3,
+    "targetY": 2,
+    "amount": 2,
+    "targetHpBefore": 12,
+    "targetHpAfter": 14,
+    "resultingValue": 14
+  },
+  {
+    "tick": 8,
+    "event": "UNIT_ATTACKED",
+    "sourceUnitId": 2,
+    "targetUnitId": 1,
+    "sourceX": 6,
+    "sourceY": 1,
+    "targetX": 3,
+    "targetY": 2,
+    "amount": 4,
+    "targetHpBefore": 14,
+    "targetHpAfter": 10,
+    "resultingValue": 10
+  },
+  {
+    "tick": 8,
+    "event": "UNIT_HEALED",
+    "sourceUnitId": 4,
+    "targetUnitId": 1,
+    "sourceX": 1,
+    "sourceY": 4,
+    "targetX": 3,
+    "targetY": 2,
+    "amount": 2,
+    "targetHpBefore": 10,
+    "targetHpAfter": 12,
+    "resultingValue": 12
+  },
+  {
+    "tick": 9,
+    "event": "UNIT_ATTACKED",
+    "sourceUnitId": 2,
+    "targetUnitId": 1,
+    "sourceX": 6,
+    "sourceY": 1,
+    "targetX": 3,
+    "targetY": 2,
+    "amount": 4,
+    "targetHpBefore": 12,
+    "targetHpAfter": 8,
+    "resultingValue": 8
+  },
+  {
+    "tick": 9,
+    "event": "UNIT_HEALED",
+    "sourceUnitId": 4,
+    "targetUnitId": 1,
+    "sourceX": 1,
+    "sourceY": 4,
+    "targetX": 3,
+    "targetY": 2,
+    "amount": 2,
+    "targetHpBefore": 8,
+    "targetHpAfter": 10,
+    "resultingValue": 10
+  },
+  {
+    "tick": 10,
+    "event": "UNIT_ATTACKED",
+    "sourceUnitId": 2,
+    "targetUnitId": 1,
+    "sourceX": 6,
+    "sourceY": 1,
+    "targetX": 3,
+    "targetY": 2,
+    "amount": 4,
+    "targetHpBefore": 10,
+    "targetHpAfter": 6,
+    "resultingValue": 6
+  },
+  {
+    "tick": 10,
+    "event": "UNIT_HEALED",
+    "sourceUnitId": 4,
+    "targetUnitId": 1,
+    "sourceX": 1,
+    "sourceY": 4,
+    "targetX": 3,
+    "targetY": 2,
+    "amount": 2,
+    "targetHpBefore": 6,
+    "targetHpAfter": 8,
+    "resultingValue": 8
+  },
+  {
+    "tick": 11,
+    "event": "UNIT_ATTACKED",
+    "sourceUnitId": 2,
+    "targetUnitId": 1,
+    "sourceX": 6,
+    "sourceY": 1,
+    "targetX": 3,
+    "targetY": 2,
+    "amount": 4,
+    "targetHpBefore": 8,
+    "targetHpAfter": 4,
+    "resultingValue": 4
+  },
+  {
+    "tick": 11,
+    "event": "UNIT_HEALED",
+    "sourceUnitId": 4,
+    "targetUnitId": 1,
+    "sourceX": 1,
+    "sourceY": 4,
+    "targetX": 3,
+    "targetY": 2,
+    "amount": 2,
+    "targetHpBefore": 4,
+    "targetHpAfter": 6,
+    "resultingValue": 6
+  },
+  {
+    "tick": 12,
+    "event": "UNIT_ATTACKED",
+    "sourceUnitId": 2,
+    "targetUnitId": 1,
+    "sourceX": 6,
+    "sourceY": 1,
+    "targetX": 3,
+    "targetY": 2,
+    "amount": 4,
+    "targetHpBefore": 6,
+    "targetHpAfter": 2,
+    "resultingValue": 2
+  },
+  {
+    "tick": 12,
+    "event": "UNIT_HEALED",
+    "sourceUnitId": 4,
+    "targetUnitId": 1,
+    "sourceX": 1,
+    "sourceY": 4,
+    "targetX": 3,
+    "targetY": 2,
+    "amount": 2,
+    "targetHpBefore": 2,
+    "targetHpAfter": 4,
+    "resultingValue": 4
+  },
+  {
+    "tick": 13,
+    "event": "UNIT_ATTACKED",
+    "sourceUnitId": 2,
+    "targetUnitId": 1,
+    "sourceX": 6,
+    "sourceY": 1,
+    "targetX": 3,
+    "targetY": 2,
+    "amount": 4,
+    "targetHpBefore": 4,
+    "targetHpAfter": 0,
+    "resultingValue": 0
+  },
+  {
+    "tick": 13,
+    "event": "UNIT_DIED",
+    "unitId": 1,
+    "x": 3,
+    "y": 2,
+    "reason": "Death"
+  },
+  {
+    "tick": 13,
     "event": "UNIT_MOVED",
-    "unitId": 3,
+    "unitId": 4,
+    "fromX": 1,
+    "fromY": 4,
     "x": 2,
     "y": 4
   },
   {
-    "tick": 7,
-    "event": "UNIT_MOVED",
-    "unitId": 7,
+    "tick": 13,
+    "event": "MARCH_ENDED",
+    "unitId": 4,
     "x": 2,
+    "y": 4
+  },
+  {
+    "tick": 14,
+    "event": "UNIT_MOVED",
+    "unitId": 2,
+    "fromX": 6,
+    "fromY": 1,
+    "x": 5,
     "y": 1
   },
   {
-    "tick": 8,
-    "event": "UNIT_MOVED",
-    "unitId": 3,
-    "x": 3,
-    "y": 3
+    "tick": 15,
+    "event": "UNIT_ATTACKED",
+    "sourceUnitId": 2,
+    "targetUnitId": 4,
+    "sourceX": 5,
+    "sourceY": 1,
+    "targetX": 2,
+    "targetY": 4,
+    "amount": 4,
+    "targetHpBefore": 4,
+    "targetHpAfter": 0,
+    "resultingValue": 0
   },
   {
-    "tick": 8,
-    "event": "UNIT_MOVED",
-    "unitId": 7,
-    "x": 1,
-    "y": 0
-  },
-  {
-    "tick": 8,
-    "event": "MARCH_ENDED",
-    "unitId": 7,
-    "x": 1,
-    "y": 0
-  },
-  {
-    "tick": 9,
-    "event": "UNIT_MOVED",
-    "unitId": 3,
-    "x": 4,
-    "y": 3
-  },
-  {
-    "tick": 10,
-    "event": "UNIT_MOVED",
-    "unitId": 3,
-    "x": 5,
-    "y": 2
-  },
-  {
-    "tick": 11,
-    "event": "UNIT_MOVED",
-    "unitId": 3,
-    "x": 6,
-    "y": 3
-  },
-  {
-    "tick": 11,
-    "event": "MARCH_ENDED",
-    "unitId": 3,
-    "x": 6,
-    "y": 3
+    "tick": 15,
+    "event": "UNIT_DIED",
+    "unitId": 4,
+    "x": 2,
+    "y": 4,
+    "reason": "Death"
   }
 ]

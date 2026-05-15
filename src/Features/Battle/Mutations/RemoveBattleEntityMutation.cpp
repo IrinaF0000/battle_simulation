@@ -25,10 +25,12 @@ namespace battle_sim::features::battle
 		bool publishEvent)
 	{
 		return core::engine::Mutation{
-			[entity](core::engine::GameContext& game) {
+			[entity, reason, publishEvent](core::engine::GameContext& game) {
 				auto& world = game.world;
 				require(world.exists(entity), "Cannot remove missing battle entity");
 
+				const auto* removedPositionComponent = positionOf(world, entity);
+				const auto removedPosition = removedPositionComponent ? removedPositionComponent->value : core::Position{};
 				if (game.resources.contains<BattleMapResource>() && isBlocking(world, entity))
 				{
 					if (const auto* position = positionOf(world, entity))
@@ -39,11 +41,10 @@ namespace battle_sim::features::battle
 
 				world.components().alive.remove(entity);
 				require(world.removeEntity(entity), "Cannot remove battle entity from world");
-			},
-			[entity, reason, publishEvent](core::engine::GameContext& game) {
+
 				if (publishEvent)
 				{
-					game.events.publish(features::battle::EntityRemovedEvent{game.world.tick(), entity, reason});
+					game.events.publish(features::battle::EntityRemovedEvent{game.world.tick(), entity, reason, removedPosition});
 				}
 			}};
 	}
