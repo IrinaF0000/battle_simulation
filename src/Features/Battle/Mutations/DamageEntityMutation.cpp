@@ -35,21 +35,34 @@ namespace battle_sim::features::battle
 				auto* health = healthOf(world, target);
 				require(health != nullptr && health->hp > 0, "Cannot apply battle damage without positive health");
 
+				const auto* sourcePositionComponent = positionOf(world, source);
+				const auto* targetPositionComponent = positionOf(world, target);
+				const auto sourcePosition = sourcePositionComponent ? sourcePositionComponent->value : core::Position{};
+				const auto targetPosition = targetPositionComponent ? targetPositionComponent->value : core::Position{};
+				const int previousHealth = health->hp;
 				health->hp -= amount;
+				const int resultingHealth = health->hp;
 				if (health->hp <= 0)
 				{
 					world.components().alive.remove(target);
 				}
-			},
-			[source, target, amount](core::engine::GameContext& game) {
-				const auto* health = healthOf(game.world, target);
-				const int resultingHealth = health ? health->hp : 0;
+
 				game.events.publish(
-					features::battle::EffectAppliedEvent{game.world.tick(), source, target, features::battle::EffectType::Damage, amount, resultingHealth});
+					features::battle::EffectAppliedEvent{
+						game.world.tick(),
+						source,
+						target,
+						features::battle::EffectType::Damage,
+						amount,
+						resultingHealth,
+						sourcePosition,
+						targetPosition,
+						previousHealth});
 
 				if (resultingHealth <= 0 && battlePolicies(game).lifecycle.emitDeathBeforeCleanup)
 				{
-					game.events.publish(features::battle::EntityRemovedEvent{game.world.tick(), target, features::battle::RemovalReason::Death});
+					game.events.publish(
+						features::battle::EntityRemovedEvent{game.world.tick(), target, features::battle::RemovalReason::Death, targetPosition});
 				}
 			}};
 	}

@@ -229,6 +229,12 @@
       padding-bottom: 2px;
     }
 
+    .map-shell {
+      inline-size: max-content;
+      min-inline-size: 100%;
+      position: relative;
+    }
+
     .map-grid {
       background: var(--grid);
       border: 1px solid var(--line);
@@ -236,7 +242,9 @@
       gap: 1px;
       min-block-size: 320px;
       min-inline-size: 320px;
+      position: relative;
       width: max-content;
+      z-index: 1;
     }
 
     .map-grid.empty {
@@ -256,6 +264,169 @@
       min-inline-size: 64px;
       padding: 4px;
       position: relative;
+    }
+
+    .event-overlay {
+      inset-block-start: 0;
+      inset-inline-start: 0;
+      overflow: visible;
+      pointer-events: none;
+      position: absolute;
+      z-index: 3;
+    }
+
+    .combat-link,
+    .combat-dot,
+    .combat-pulse,
+    .combat-label {
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+
+    .combat-link {
+      animation: combat-link-in 720ms ease-out both;
+      fill: none;
+      stroke-linecap: round;
+      stroke-width: 4;
+    }
+
+    .combat-link.attack {
+      stroke: #dc2626;
+    }
+
+    .combat-link.heal {
+      stroke: #059669;
+    }
+
+    .combat-link.move {
+      stroke: #2563eb;
+      stroke-dasharray: 7 5;
+      stroke-width: 3;
+    }
+
+    .combat-dot {
+      animation: combat-dot-in 720ms ease-out both;
+      fill: #ffffff;
+      stroke-width: 3;
+    }
+
+    .combat-dot.attack {
+      stroke: #dc2626;
+    }
+
+    .combat-dot.heal {
+      stroke: #059669;
+    }
+
+    .combat-dot.move {
+      stroke: #2563eb;
+    }
+
+    .combat-pulse {
+      animation: combat-pulse-in 780ms ease-out both;
+      fill: rgba(28, 36, 48, 0.08);
+      stroke-width: 3;
+    }
+
+    .combat-pulse.attack,
+    .combat-pulse.death {
+      stroke: #dc2626;
+    }
+
+    .combat-pulse.heal {
+      stroke: #059669;
+    }
+
+    .combat-pulse.explosion {
+      fill: rgba(249, 115, 22, 0.18);
+      stroke: #f97316;
+      stroke-width: 4;
+    }
+
+    .combat-label {
+      animation: combat-label-float 780ms ease-out both;
+      fill: var(--text);
+      font-size: 13px;
+      font-weight: 900;
+      paint-order: stroke;
+      pointer-events: none;
+      stroke: #ffffff;
+      stroke-linejoin: round;
+      stroke-width: 4px;
+      text-anchor: middle;
+    }
+
+    .combat-label.attack,
+    .combat-label.death {
+      fill: #b42318;
+    }
+
+    .combat-label.heal {
+      fill: #047857;
+    }
+
+    .combat-label.move {
+      fill: #1d4ed8;
+    }
+
+    .combat-label.explosion {
+      fill: #c2410c;
+    }
+
+    @keyframes combat-link-in {
+      from {
+        opacity: 0;
+        transform: scale(0.92);
+      }
+      18% {
+        opacity: 1;
+      }
+      to {
+        opacity: 0;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes combat-dot-in {
+      from {
+        opacity: 0;
+        transform: scale(0.6);
+      }
+      24% {
+        opacity: 1;
+      }
+      to {
+        opacity: 0;
+        transform: scale(1.3);
+      }
+    }
+
+    @keyframes combat-pulse-in {
+      from {
+        opacity: 0;
+        transform: scale(0.35);
+      }
+      22% {
+        opacity: 1;
+      }
+      to {
+        opacity: 0;
+        transform: scale(1.45);
+      }
+    }
+
+    @keyframes combat-label-float {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      20% {
+        opacity: 1;
+      }
+      to {
+        opacity: 0;
+        transform: translateY(-14px);
+      }
     }
 
     .cell-coord {
@@ -707,7 +878,10 @@
       <div id="status" class="status">Load a trace JSON file to begin.</div>
       <div id="mapMeta" class="map-meta"></div>
       <div class="map-wrap">
-        <div id="mapGrid" class="map-grid empty">No trace loaded.</div>
+        <div id="mapShell" class="map-shell">
+          <div id="mapGrid" class="map-grid empty">No trace loaded.</div>
+          <svg id="eventOverlay" class="event-overlay" aria-hidden="true"></svg>
+        </div>
       </div>
     </section>
 
@@ -785,7 +959,7 @@
     </aside>
 
     <section class="event-panel" aria-labelledby="eventTitle">
-      <h2 id="eventTitle">Event Log</h2>
+      <h2 id="eventTitle">Combat Log</h2>
       <ol id="eventLog" class="event-log"></ol>
     </section>
   </main>
@@ -849,6 +1023,7 @@
         status: document.getElementById("status"),
         mapMeta: document.getElementById("mapMeta"),
         map: document.getElementById("mapGrid"),
+        overlay: document.getElementById("eventOverlay"),
         summary: document.getElementById("summary"),
         selected: document.getElementById("selectedUnit"),
         warnings: document.getElementById("warnings"),
@@ -1262,6 +1437,11 @@
         return Number.isFinite(tick) ? tick : null;
       }
 
+      function finiteNumber(value) {
+        const number = Number(value);
+        return Number.isFinite(number) ? number : null;
+      }
+
       function jumpToIndex(nextIndex) {
         if (state.ticks.length === 0) {
           return;
@@ -1315,6 +1495,7 @@
 
         renderControls();
         renderMap(snapshot, tick);
+        renderCombatEffects(snapshot);
         renderSummary(snapshot, tick);
         renderSelected(snapshot);
         renderWarnings(snapshot);
@@ -1442,6 +1623,7 @@
 
       function renderMap(snapshot, tick) {
         if (!snapshot.map) {
+          clearCombatEffects();
           els.map.className = "map-grid empty";
           els.map.textContent = "MAP_CREATED has not been applied yet.";
           els.mapMeta.textContent = "";
@@ -1475,6 +1657,8 @@
           for (let x = 0; x < snapshot.map.width; x += 1) {
             const cell = document.createElement("div");
             cell.className = "cell";
+            cell.dataset.x = String(x);
+            cell.dataset.y = String(y);
             const coord = document.createElement("span");
             coord.className = "cell-coord";
             coord.textContent = `${x},${y}`;
@@ -1493,6 +1677,212 @@
         }
       }
 
+      function renderCombatEffects(snapshot) {
+        clearCombatEffects();
+        if (!snapshot.map || snapshot.currentEvents.length === 0) {
+          return;
+        }
+
+        const bounds = els.map.getBoundingClientRect();
+        const width = Math.max(1, Math.ceil(els.map.scrollWidth || bounds.width));
+        const height = Math.max(1, Math.ceil(els.map.scrollHeight || bounds.height));
+        els.overlay.setAttribute("width", String(width));
+        els.overlay.setAttribute("height", String(height));
+        els.overlay.setAttribute("viewBox", `0 0 ${width} ${height}`);
+        els.overlay.style.width = `${width}px`;
+        els.overlay.style.height = `${height}px`;
+
+        appendCombatMarkers();
+
+        for (const event of snapshot.currentEvents) {
+          if (state.invalidEventIndexes.has(event.__index)) {
+            continue;
+          }
+
+          switch (event.event) {
+            case "UNIT_ATTACKED":
+              drawDirectionalEffect(
+                eventPoint(snapshot, event, "source", event.sourceUnitId),
+                eventPoint(snapshot, event, "target", event.targetUnitId),
+                "attack",
+                combatAmountLabel(event, "attack", "hit")
+              );
+              break;
+            case "UNIT_HEALED":
+              drawDirectionalEffect(
+                eventPoint(snapshot, event, "source", event.sourceUnitId),
+                eventPoint(snapshot, event, "target", event.targetUnitId),
+                "heal",
+                combatAmountLabel(event, "heal", "heal")
+              );
+              break;
+            case "UNIT_MOVED":
+              drawDirectionalEffect(
+                eventPoint(snapshot, event, "from", event.unitId),
+                eventPoint(snapshot, event, "", event.unitId),
+                "move",
+                "move"
+              );
+              break;
+            case "UNIT_DIED": {
+              const reason = String(event.reason || "").toLowerCase();
+              const kind = reason === "destroyed" ? "explosion" : "death";
+              drawPulse(eventPoint(snapshot, event, "", event.unitId), kind, kind === "explosion" ? "boom" : "KO");
+              break;
+            }
+            default:
+              break;
+          }
+        }
+      }
+
+      function clearCombatEffects() {
+        els.overlay.replaceChildren();
+        els.overlay.removeAttribute("width");
+        els.overlay.removeAttribute("height");
+        els.overlay.removeAttribute("viewBox");
+        els.overlay.style.removeProperty("width");
+        els.overlay.style.removeProperty("height");
+      }
+
+      function appendCombatMarkers() {
+        const defs = createSvgElement("defs");
+        const markers = {
+          attack: "#dc2626",
+          heal: "#059669",
+          move: "#2563eb"
+        };
+
+        for (const [kind, color] of Object.entries(markers)) {
+          const marker = createSvgElement("marker");
+          marker.setAttribute("id", `combat-arrow-${kind}`);
+          marker.setAttribute("viewBox", "0 0 10 10");
+          marker.setAttribute("refX", "9");
+          marker.setAttribute("refY", "5");
+          marker.setAttribute("markerWidth", "3.5");
+          marker.setAttribute("markerHeight", "3.5");
+          marker.setAttribute("markerUnits", "strokeWidth");
+          marker.setAttribute("orient", "auto");
+
+          const arrow = createSvgElement("path");
+          arrow.setAttribute("d", "M 0 0 L 10 5 L 0 10 Z");
+          arrow.setAttribute("fill", color);
+
+          marker.appendChild(arrow);
+          defs.appendChild(marker);
+        }
+
+        els.overlay.appendChild(defs);
+      }
+
+      function eventPoint(snapshot, event, prefix, unitId) {
+        const xKey = prefix ? `${prefix}X` : "x";
+        const yKey = prefix ? `${prefix}Y` : "y";
+        const fromEvent = cellCenter(event[xKey], event[yKey]);
+        if (fromEvent) {
+          return fromEvent;
+        }
+
+        const unit = snapshot.units.get(unitId);
+        return unit ? cellCenter(unit.x, unit.y) : null;
+      }
+
+      function cellCenter(x, y) {
+        const cellX = finiteNumber(x);
+        const cellY = finiteNumber(y);
+        if (cellX === null || cellY === null) {
+          return null;
+        }
+
+        const cell = els.map.querySelector(`.cell[data-x="${Math.floor(cellX)}"][data-y="${Math.floor(cellY)}"]`);
+        if (!cell) {
+          return null;
+        }
+
+        const mapRect = els.map.getBoundingClientRect();
+        const cellRect = cell.getBoundingClientRect();
+        return {
+          x: cellRect.left - mapRect.left + cellRect.width / 2,
+          y: cellRect.top - mapRect.top + cellRect.height / 2
+        };
+      }
+
+      function drawDirectionalEffect(from, to, kind, label) {
+        if (!from || !to) {
+          return;
+        }
+
+        const distance = Math.hypot(to.x - from.x, to.y - from.y);
+        if (distance < 4) {
+          drawPulse(to, kind, label);
+          return;
+        }
+
+        const trim = Math.min(kind === "move" ? 18 : 24, distance / 3);
+        const dx = (to.x - from.x) / distance;
+        const dy = (to.y - from.y) / distance;
+        const start = { x: from.x + dx * trim, y: from.y + dy * trim };
+        const end = { x: to.x - dx * trim, y: to.y - dy * trim };
+        const mid = { x: (start.x + end.x) / 2, y: (start.y + end.y) / 2 };
+
+        const link = createSvgElement("path");
+        link.classList.add("combat-link", kind);
+        link.setAttribute("d", `M ${start.x.toFixed(1)} ${start.y.toFixed(1)} L ${end.x.toFixed(1)} ${end.y.toFixed(1)}`);
+        if (kind === "attack" || kind === "heal" || kind === "move") {
+          link.setAttribute("marker-end", `url(#combat-arrow-${kind})`);
+        }
+        els.overlay.appendChild(link);
+
+        const dot = createSvgElement("circle");
+        dot.classList.add("combat-dot", kind);
+        dot.setAttribute("cx", to.x.toFixed(1));
+        dot.setAttribute("cy", to.y.toFixed(1));
+        dot.setAttribute("r", kind === "move" ? "4" : "6");
+        els.overlay.appendChild(dot);
+
+        drawCombatLabel(mid, kind, label);
+      }
+
+      function drawPulse(point, kind, label) {
+        if (!point) {
+          return;
+        }
+
+        const pulse = createSvgElement("circle");
+        pulse.classList.add("combat-pulse", kind);
+        pulse.setAttribute("cx", point.x.toFixed(1));
+        pulse.setAttribute("cy", point.y.toFixed(1));
+        pulse.setAttribute("r", kind === "explosion" ? "24" : "18");
+        els.overlay.appendChild(pulse);
+
+        drawCombatLabel({ x: point.x, y: point.y - 18 }, kind, label);
+      }
+
+      function drawCombatLabel(point, kind, label) {
+        if (!label) {
+          return;
+        }
+
+        const text = createSvgElement("text");
+        text.classList.add("combat-label", kind);
+        text.setAttribute("x", point.x.toFixed(1));
+        text.setAttribute("y", point.y.toFixed(1));
+        text.textContent = label;
+        els.overlay.appendChild(text);
+      }
+
+      function combatAmountLabel(event, kind, fallback) {
+        const amount = finiteNumber(event.amount);
+        if (amount !== null) {
+          return kind === "heal" ? `+${amount}` : `-${amount}`;
+        }
+        return fallback;
+      }
+
+      function createSvgElement(name) {
+        return document.createElementNS("http://www.w3.org/2000/svg", name);
+      }
+
       function renderUnitToken(unit, highlighted) {
         const token = document.createElement("button");
         token.type = "button";
@@ -1506,6 +1896,7 @@
         ].filter(Boolean).join(" ");
         token.title = unitAccessibleLabel(unit);
         token.setAttribute("aria-label", unitAccessibleLabel(unit));
+        token.dataset.unitId = String(unit.id);
 
         const sprite = document.createElement("img");
         sprite.className = "unit-sprite";
@@ -1521,10 +1912,24 @@
         token.appendChild(badge);
 
         token.addEventListener("click", () => {
-          state.selectedUnitId = unit.id;
-          renderAtCurrentTick();
+          selectUnit(unit.id);
         });
         return token;
+      }
+
+      function selectUnit(unitId) {
+        state.selectedUnitId = unitId;
+        updateSelectedUnitStyles();
+        if (state.currentSnapshot) {
+          renderSelected(state.currentSnapshot);
+        }
+      }
+
+      function updateSelectedUnitStyles() {
+        const selectedUnitId = state.selectedUnitId === null ? null : String(state.selectedUnitId);
+        for (const token of els.map.querySelectorAll(".unit")) {
+          token.classList.toggle("selected", selectedUnitId !== null && token.dataset.unitId === selectedUnitId);
+        }
       }
 
       function unitTypeClass(type) {
@@ -1738,16 +2143,42 @@
           case "MARCH_ENDED":
             return `unit #${event.unitId} ended at ${event.x},${event.y}`;
           case "UNIT_MOVED":
+            if (finiteNumber(event.fromX) !== null && finiteNumber(event.fromY) !== null) {
+              return `unit #${event.unitId} moved from ${event.fromX},${event.fromY} to ${event.x},${event.y}`;
+            }
             return `unit #${event.unitId} moved to ${event.x},${event.y}`;
           case "UNIT_ATTACKED":
-            return `unit #${event.sourceUnitId} hit #${event.targetUnitId} for ${event.amount}; hp ${event.resultingValue}`;
+            return `unit #${event.sourceUnitId} hit #${event.targetUnitId} for ${event.amount}; ${formatHpChange(event)}`;
           case "UNIT_HEALED":
-            return `unit #${event.sourceUnitId} healed #${event.targetUnitId} for ${event.amount}; hp ${event.resultingValue}`;
+            return `unit #${event.sourceUnitId} healed #${event.targetUnitId} for ${event.amount}; ${formatHpChange(event)}`;
           case "UNIT_DIED":
-            return `unit #${event.unitId} died`;
+            return `unit #${event.unitId} died${formatDeathDetail(event)}`;
           default:
             return JSON.stringify(stripPrivateFields(event));
         }
+      }
+
+      function formatHpChange(event) {
+        const before = finiteNumber(event.targetHpBefore);
+        const after = finiteNumber(event.targetHpAfter ?? event.resultingValue);
+        if (before !== null && after !== null) {
+          return `hp ${before} -> ${after}`;
+        }
+        if (after !== null) {
+          return `hp ${after}`;
+        }
+        return "hp unknown";
+      }
+
+      function formatDeathDetail(event) {
+        const parts = [];
+        if (typeof event.reason === "string" && event.reason.length > 0) {
+          parts.push(event.reason);
+        }
+        if (finiteNumber(event.x) !== null && finiteNumber(event.y) !== null) {
+          parts.push(`at ${event.x},${event.y}`);
+        }
+        return parts.length ? ` (${parts.join(", ")})` : "";
       }
 
       function stripPrivateFields(event) {
@@ -1762,6 +2193,7 @@
         els.map.className = "map-grid empty";
         els.map.removeAttribute("style");
         els.map.textContent = "No trace loaded.";
+        clearCombatEffects();
         els.mapMeta.textContent = "";
         setDefinitionRows(els.summary, [["Status", "not loaded"]]);
         setDefinitionRows(els.selected, [["Status", "none"]]);
