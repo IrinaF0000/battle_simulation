@@ -252,8 +252,8 @@
 
     .cell {
       background: #ffffff;
-      min-block-size: 58px;
-      min-inline-size: 58px;
+      min-block-size: 64px;
+      min-inline-size: 64px;
       padding: 4px;
       position: relative;
     }
@@ -271,33 +271,81 @@
       align-content: end;
       display: flex;
       flex-wrap: wrap;
-      gap: 4px;
+      gap: 3px;
       height: 100%;
       padding-top: 12px;
     }
 
     .unit {
       align-items: center;
-      border: 1px solid rgba(28, 36, 48, 0.2);
-      border-radius: 5px;
+      background: var(--team-bg, #e2e8f0);
+      border: 2px solid var(--team-color, #94a3b8);
+      border-radius: 999px;
+      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.78), 0 2px 5px rgba(28, 36, 48, 0.18);
       color: #ffffff;
       cursor: pointer;
       display: inline-flex;
-      font-size: 11px;
-      font-weight: 800;
+      flex: 0 0 auto;
       justify-content: center;
-      min-height: 24px;
-      min-width: 34px;
-      padding: 0 5px;
+      min-height: 42px;
+      min-width: 42px;
+      overflow: visible;
+      padding: 0;
+      position: relative;
+      height: 42px;
+      width: 42px;
     }
 
-    .unit.swordsman { background: #2563eb; }
-    .unit.hunter { background: #7c3aed; }
-    .unit.healer { background: #0f9f6e; }
-    .unit.tower { background: #4b5563; }
-    .unit.mine { background: #d97706; }
-    .unit.raven { background: #be123c; }
-    .unit.unknown { background: #475569; }
+    .unit.team-neutral {
+      --team-bg: #eef2f7;
+      --team-color: #64748b;
+    }
+
+    .unit.team-red {
+      --team-bg: #ffe5e5;
+      --team-color: #e25555;
+    }
+
+    .unit.team-blue {
+      --team-bg: #e1efff;
+      --team-color: #3b82f6;
+    }
+
+    .unit.team-green {
+      --team-bg: #daf8e8;
+      --team-color: #16a36a;
+    }
+
+    .unit.team-gold {
+      --team-bg: #fff1c9;
+      --team-color: #d99a12;
+    }
+
+    .unit-sprite {
+      display: block;
+      height: 32px;
+      pointer-events: none;
+      width: 32px;
+    }
+
+    .unit-id {
+      align-items: center;
+      background: var(--text);
+      border: 1px solid rgba(255, 255, 255, 0.88);
+      border-radius: 999px;
+      bottom: -4px;
+      color: #ffffff;
+      display: inline-flex;
+      font-size: 10px;
+      font-weight: 800;
+      justify-content: center;
+      line-height: 1;
+      min-height: 16px;
+      min-width: 16px;
+      padding: 0 4px;
+      position: absolute;
+      right: -5px;
+    }
 
     .unit.highlight {
       box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.22);
@@ -312,7 +360,6 @@
     .unit.dead {
       filter: grayscale(1);
       opacity: 0.45;
-      text-decoration: line-through;
     }
 
     .side-panel {
@@ -604,8 +651,20 @@
       }
 
       .cell {
-        min-block-size: 48px;
-        min-inline-size: 48px;
+        min-block-size: 56px;
+        min-inline-size: 56px;
+      }
+
+      .unit {
+        height: 38px;
+        min-height: 38px;
+        min-width: 38px;
+        width: 38px;
+      }
+
+      .unit-sprite {
+        height: 29px;
+        width: 29px;
       }
     }
   </style>
@@ -754,6 +813,28 @@
         UNIT_HEALED: { number: ["tick", "sourceUnitId", "targetUnitId", "amount", "resultingValue"], string: ["event"] },
         UNIT_DIED: { number: ["tick", "unitId"], string: ["event"] }
       };
+
+      const unitSpritePaths = {
+        Swordsman: "assets/units/swordsman.svg",
+        Lancer: "assets/units/lancer.svg",
+        Hunter: "assets/units/hunter.svg",
+        Tower: "assets/units/tower.svg",
+        Raven: "assets/units/raven.svg",
+        Healer: "assets/units/healer.svg",
+        Mine: "assets/units/mine.svg",
+        Duelist: "assets/units/duelist.svg",
+        Spearman: "assets/units/spearman.svg",
+        default: "assets/units/default.svg"
+      };
+
+      const teamClassByName = new Map([
+        ["red", "team-red"],
+        ["blue", "team-blue"],
+        ["green", "team-green"],
+        ["gold", "team-gold"],
+        ["yellow", "team-gold"],
+        ["neutral", "team-neutral"]
+      ]);
 
       const els = {
         file: document.getElementById("traceFile"),
@@ -1285,6 +1366,7 @@
             snapshot.units.set(event.unitId, {
               id: event.unitId,
               type: event.unitType,
+              team: event.team ?? event.teamId ?? event.side ?? event.owner ?? "neutral",
               x: Math.floor(event.x),
               y: Math.floor(event.y),
               hp: null,
@@ -1380,8 +1462,8 @@
         }
 
         els.map.className = "map-grid";
-        els.map.style.gridTemplateColumns = `repeat(${snapshot.map.width}, minmax(48px, 58px))`;
-        els.map.style.gridTemplateRows = `repeat(${snapshot.map.height}, minmax(48px, 58px))`;
+        els.map.style.gridTemplateColumns = `repeat(${snapshot.map.width}, minmax(56px, 64px))`;
+        els.map.style.gridTemplateRows = `repeat(${snapshot.map.height}, minmax(56px, auto))`;
         els.map.replaceChildren();
         setInlineMeta(els.mapMeta, [
           `Map: ${snapshot.map.width} x ${snapshot.map.height}`,
@@ -1417,12 +1499,27 @@
         token.className = [
           "unit",
           unitTypeClass(unit.type),
+          teamClass(unit.team),
           highlighted ? "highlight" : "",
           state.selectedUnitId === unit.id ? "selected" : "",
           unit.alive ? "" : "dead"
         ].filter(Boolean).join(" ");
-        token.textContent = unitLabel(unit);
-        token.title = `${unit.type} #${unit.id}`;
+        token.title = unitAccessibleLabel(unit);
+        token.setAttribute("aria-label", unitAccessibleLabel(unit));
+
+        const sprite = document.createElement("img");
+        sprite.className = "unit-sprite";
+        sprite.src = unitSpritePath(unit.type);
+        sprite.alt = "";
+        sprite.setAttribute("aria-hidden", "true");
+        sprite.draggable = false;
+        token.appendChild(sprite);
+
+        const badge = document.createElement("span");
+        badge.className = "unit-id";
+        badge.textContent = String(unit.id);
+        token.appendChild(badge);
+
         token.addEventListener("click", () => {
           state.selectedUnitId = unit.id;
           renderAtCurrentTick();
@@ -1431,16 +1528,41 @@
       }
 
       function unitTypeClass(type) {
-        const normalized = String(type || "").toLowerCase();
-        if (["swordsman", "hunter", "healer", "tower", "mine", "raven"].includes(normalized)) {
-          return normalized;
-        }
-        return "unknown";
+        const normalized = normalizeUnitType(type);
+        return unitSpritePaths[normalized] ? normalized.toLowerCase() : "unknown";
       }
 
-      function unitLabel(unit) {
-        const prefix = String(unit.type || "U").slice(0, 1).toUpperCase();
-        return `${prefix}${unit.id}`;
+      function unitSpritePath(type) {
+        const normalized = normalizeUnitType(type);
+        return unitSpritePaths[normalized] || unitSpritePaths.default;
+      }
+
+      function normalizeUnitType(type) {
+        const value = String(type || "").trim();
+        if (!value) {
+          return "default";
+        }
+        return value.slice(0, 1).toUpperCase() + value.slice(1).toLowerCase();
+      }
+
+      function teamClass(team) {
+        const key = String(team ?? "neutral").trim().toLowerCase();
+        if (teamClassByName.has(key)) {
+          return teamClassByName.get(key);
+        }
+        const numeric = Number(key);
+        if (Number.isInteger(numeric)) {
+          return ["team-blue", "team-red", "team-green", "team-gold"][Math.abs(numeric) % 4];
+        }
+        return "team-neutral";
+      }
+
+      function unitAccessibleLabel(unit) {
+        const type = unit.type || "Unknown unit";
+        const team = unit.team ?? "neutral";
+        const hp = unit.hp === null ? "hit points unknown" : `${unit.hp} hit points`;
+        const stateLabel = unit.alive ? "alive" : "dead";
+        return `${type} #${unit.id}, ${team} team, ${hp}, ${stateLabel}`;
       }
 
       function involvedUnitIds(events) {
@@ -1539,6 +1661,7 @@
         const rows = [
           ["ID", unit.id],
           ["Type", unit.type],
+          ["Team", unit.team ?? "neutral"],
           ["Position", `${unit.x},${unit.y}`],
           ["HP", hp],
           ["State", unit.alive ? "alive" : "dead"],

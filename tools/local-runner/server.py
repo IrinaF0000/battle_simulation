@@ -433,6 +433,8 @@ def content_type_for(path: Path) -> str:
         return "text/html; charset=utf-8"
     if suffix == ".json":
         return "application/json; charset=utf-8"
+    if suffix == ".svg":
+        return "image/svg+xml"
     if suffix == ".txt" or suffix == ".commands":
         return "text/plain; charset=utf-8"
     if suffix == ".css":
