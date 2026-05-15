@@ -2,7 +2,21 @@
 
 `tools/replay-viewer/index.html` is a static browser tool for inspecting deterministic JSON traces from the battle simulator.
 
-## Usage
+A copy is also published under `docs/replay-viewer/` so GitHub Pages can host a static project demo.
+
+## Static Demo
+
+The viewer can load a prepared demo trace from:
+
+```text
+traces/basic-battle.json
+```
+
+When hosted through GitHub Pages, this gives reviewers a browser-based visual replay without requiring a local build.
+
+The static demo does not run the C++ executable. It only replays JSON traces that were generated beforehand.
+
+## Manual Trace Loading
 
 Generate a trace:
 

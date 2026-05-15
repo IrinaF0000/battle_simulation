@@ -4,7 +4,7 @@ This index maps the public-facing docs for the C++20 gameplay architecture sandb
 
 ## Start Here
 
-- `../README.md`: quick start, sample output, portfolio highlights.
+- `../README.md`: quick start, sample output, project highlights.
 - `architecture.md`: module boundaries and dependency direction.
 - `game-loop.md`: CLI scenario flow and scheduled runtime loop.
 - `system-order.md`: command setup order, scheduler phases, and feature-pack order.

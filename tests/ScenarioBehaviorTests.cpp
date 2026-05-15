@@ -1,4 +1,4 @@
-// Minimal behavior tests for the pre-ECS implementation.
+// Scenario-level behavior tests for the ECS-style battle runtime.
 
 #include "App/ScenarioConfig.hpp"
 #include "App/ScenarioRunner.hpp"
