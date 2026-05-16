@@ -867,9 +867,9 @@
         <button id="nextButton" type="button" disabled>Next</button>
         <select id="speedSelect" class="speed-select" aria-label="Playback speed">
           <option value="0.5">0.5x</option>
-          <option value="1" selected>1x</option>
+          <option value="1">1x</option>
           <option value="2">2x</option>
-          <option value="4">4x</option>
+          <option value="4" selected>4x</option>
         </select>
         <div class="spacer"></div>
         <div id="tickReadout" class="tick-readout">Tick: none</div>
@@ -1001,6 +1001,15 @@
         default: "assets/units/default.svg"
       };
 
+      const runFormFieldByUnitType = {
+        Swordsman: "swordsmanCount",
+        Hunter: "hunterCount",
+        Tower: "towerCount",
+        Healer: "healerCount",
+        Mine: "mineCount",
+        Raven: "ravenCount"
+      };
+
       const teamClassByName = new Map([
         ["red", "team-red"],
         ["blue", "team-blue"],
@@ -1022,6 +1031,7 @@
         tick: document.getElementById("tickReadout"),
         status: document.getElementById("status"),
         mapMeta: document.getElementById("mapMeta"),
+        mapShell: document.getElementById("mapShell"),
         map: document.getElementById("mapGrid"),
         overlay: document.getElementById("eventOverlay"),
         summary: document.getElementById("summary"),
@@ -1044,6 +1054,8 @@
         sortedEvents: [],
         eventsByTick: new Map(),
         ticks: [],
+        steps: [],
+        stepIndexByEventIndex: new Map(),
         currentTickIndex: 0,
         selectedUnitId: null,
         playbackTimer: null,
@@ -1305,6 +1317,8 @@
             throw new Error(validation.errors[0]);
           }
 
+          applyTraceConfigurationToRunForm(parsed);
+
           state.events = parsed.map((event, index) => ({ ...event, __index: index }));
           state.sortedEvents = [...state.events].sort((a, b) => {
             const leftTick = eventTick(a) ?? Number.MAX_SAFE_INTEGER;
@@ -1313,9 +1327,13 @@
             return tickDelta || a.__index - b.__index;
           });
           state.ticks = [...new Set(state.sortedEvents.map(eventTick).filter((tick) => tick !== null))];
-          if (state.ticks.length === 0) {
+          state.steps = state.sortedEvents
+            .map((event, sortedIndex) => ({ event, sortedIndex, tick: eventTick(event) }))
+            .filter((step) => step.tick !== null);
+          if (state.steps.length === 0) {
             throw new Error("Trace has no valid tick values.");
           }
+          state.stepIndexByEventIndex = new Map(state.steps.map((step, index) => [step.event.__index, index]));
           state.eventsByTick = groupEventsByTick(state.sortedEvents);
           state.currentTickIndex = 0;
           state.selectedUnitId = null;
@@ -1323,7 +1341,7 @@
           state.invalidEventIndexes = validation.invalidEventIndexes;
           state.totalCounts = countEvents(state.events);
 
-          setStatus(`${filename} loaded. ${state.events.length} events across ${state.ticks.length} ticks.`, validation.warnings.length ? "warning" : "ok");
+          setStatus(`${filename} loaded. ${state.events.length} events across ${state.ticks.length} ticks and ${state.steps.length} replay steps.`, validation.warnings.length ? "warning" : "ok");
           renderAtCurrentTick();
           return true;
         } catch (error) {
@@ -1331,6 +1349,8 @@
           state.sortedEvents = [];
           state.eventsByTick = new Map();
           state.ticks = [];
+          state.steps = [];
+          state.stepIndexByEventIndex = new Map();
           state.currentSnapshot = null;
           state.validationWarnings = [];
           state.invalidEventIndexes = new Set();
@@ -1339,6 +1359,35 @@
           renderEmpty();
           return false;
         }
+      }
+
+      function applyTraceConfigurationToRunForm(trace) {
+        const mapEvent = trace.find((event) => event && event.event === "MAP_CREATED");
+        if (mapEvent) {
+          setNumberFieldValue("mapWidth", mapEvent.width);
+          setNumberFieldValue("mapHeight", mapEvent.height);
+        }
+
+        const counts = new Map(Object.keys(runFormFieldByUnitType).map((unitType) => [unitType, 0]));
+        for (const event of trace) {
+          if (!event || event.event !== "UNIT_SPAWNED" || !counts.has(event.unitType)) {
+            continue;
+          }
+          counts.set(event.unitType, counts.get(event.unitType) + 1);
+        }
+
+        for (const [unitType, fieldId] of Object.entries(runFormFieldByUnitType)) {
+          setNumberFieldValue(fieldId, counts.get(unitType) ?? 0);
+        }
+      }
+
+      function setNumberFieldValue(id, value) {
+        const field = document.getElementById(id);
+        const number = Number(value);
+        if (!field || !Number.isFinite(number)) {
+          return;
+        }
+        field.value = String(Math.max(0, Math.floor(number)));
       }
 
       function validateTrace(trace) {
@@ -1443,16 +1492,16 @@
       }
 
       function jumpToIndex(nextIndex) {
-        if (state.ticks.length === 0) {
+        if (state.steps.length === 0) {
           return;
         }
-        state.currentTickIndex = Math.max(0, Math.min(nextIndex, state.ticks.length - 1));
+        state.currentTickIndex = Math.max(0, Math.min(nextIndex, state.steps.length - 1));
         renderAtCurrentTick();
       }
 
-      function jumpToTick(tick) {
-        const index = state.ticks.indexOf(Number(tick));
-        if (index !== -1) {
+      function jumpToEventIndex(eventIndex) {
+        const index = state.stepIndexByEventIndex.get(eventIndex);
+        if (index !== undefined) {
           jumpToIndex(index);
         }
       }
@@ -1466,13 +1515,13 @@
       }
 
       function startPlayback() {
-        if (state.ticks.length <= 1) {
+        if (state.steps.length <= 1) {
           return;
         }
         els.play.textContent = "Pause";
         const interval = Math.max(120, 1000 / Number(els.speed.value || 1));
         state.playbackTimer = window.setInterval(() => {
-          if (state.currentTickIndex >= state.ticks.length - 1) {
+          if (state.currentTickIndex >= state.steps.length - 1) {
             stopPlayback();
             return;
           }
@@ -1489,8 +1538,9 @@
       }
 
       function renderAtCurrentTick() {
-        const tick = state.ticks[state.currentTickIndex];
-        const snapshot = replayUntil(tick);
+        const step = state.steps[state.currentTickIndex];
+        const tick = step ? step.tick : null;
+        const snapshot = replayUntilStep(state.currentTickIndex);
         state.currentSnapshot = snapshot;
 
         renderControls();
@@ -1499,25 +1549,25 @@
         renderSummary(snapshot, tick);
         renderSelected(snapshot);
         renderWarnings(snapshot);
-        renderEventLog(tick);
+        renderEventLog(step);
       }
 
-      function replayUntil(tick) {
+      function replayUntilStep(stepIndex) {
+        const step = state.steps[stepIndex];
+        const currentEvent = step ? step.event : null;
+        const maxSortedIndex = step ? step.sortedIndex : -1;
         const snapshot = {
           map: null,
           units: new Map(),
-          currentEvents: state.eventsByTick.get(tick) || [],
+          currentEvents: currentEvent ? [currentEvent] : [],
           invalidApplied: []
         };
 
-        for (const event of state.sortedEvents) {
+        for (let index = 0; index <= maxSortedIndex; index += 1) {
+          const event = state.sortedEvents[index];
           const nextTick = eventTick(event);
           if (nextTick === null) {
             continue;
-          }
-
-          if (nextTick > tick) {
-            break;
           }
 
           if (state.invalidEventIndexes.has(event.__index)) {
@@ -1609,15 +1659,16 @@
       }
 
       function renderControls() {
-        const hasTrace = state.ticks.length > 0;
+        const hasTrace = state.steps.length > 0;
         const atStart = state.currentTickIndex <= 0;
-        const atEnd = state.currentTickIndex >= state.ticks.length - 1;
+        const atEnd = state.currentTickIndex >= state.steps.length - 1;
+        const step = hasTrace ? state.steps[state.currentTickIndex] : null;
         els.reset.disabled = !hasTrace || atStart;
         els.prev.disabled = !hasTrace || atStart;
         els.next.disabled = !hasTrace || atEnd;
-        els.play.disabled = !hasTrace || state.ticks.length <= 1 || atEnd;
+        els.play.disabled = !hasTrace || state.steps.length <= 1 || atEnd;
         els.tick.textContent = hasTrace
-          ? `Tick: ${state.ticks[state.currentTickIndex]} (${state.currentTickIndex + 1}/${state.ticks.length})`
+          ? `Tick: ${step.tick} · Step: ${state.currentTickIndex + 1}/${state.steps.length}`
           : "Tick: none";
       }
 
@@ -1683,12 +1734,17 @@
           return;
         }
 
-        const bounds = els.map.getBoundingClientRect();
-        const width = Math.max(1, Math.ceil(els.map.scrollWidth || bounds.width));
-        const height = Math.max(1, Math.ceil(els.map.scrollHeight || bounds.height));
+        const mapRect = els.map.getBoundingClientRect();
+        const shellRect = els.mapShell.getBoundingClientRect();
+        const width = Math.max(1, Math.ceil(mapRect.width));
+        const height = Math.max(1, Math.ceil(mapRect.height));
+        const left = mapRect.left - shellRect.left;
+        const top = mapRect.top - shellRect.top;
         els.overlay.setAttribute("width", String(width));
         els.overlay.setAttribute("height", String(height));
         els.overlay.setAttribute("viewBox", `0 0 ${width} ${height}`);
+        els.overlay.style.left = `${left}px`;
+        els.overlay.style.top = `${top}px`;
         els.overlay.style.width = `${width}px`;
         els.overlay.style.height = `${height}px`;
 
@@ -1741,6 +1797,8 @@
         els.overlay.removeAttribute("width");
         els.overlay.removeAttribute("height");
         els.overlay.removeAttribute("viewBox");
+        els.overlay.style.removeProperty("left");
+        els.overlay.style.removeProperty("top");
         els.overlay.style.removeProperty("width");
         els.overlay.style.removeProperty("height");
       }
@@ -2033,7 +2091,8 @@
         const dead = snapshot.units.size - alive;
         const maxTick = state.ticks.length ? state.ticks[state.ticks.length - 1] : 0;
         const rows = [
-          ["Current tick", tick],
+          ["Current tick", tick ?? "none"],
+          ["Replay step", state.steps.length ? `${state.currentTickIndex + 1}/${state.steps.length}` : "none"],
           ["Ticks", state.ticks.length],
           ["Final tick", maxTick],
           ["Events", state.events.length],
@@ -2090,21 +2149,23 @@
         setWarningRows(warnings.slice(0, 12));
       }
 
-      function renderEventLog(tick) {
+      function renderEventLog(currentStep) {
         els.log.replaceChildren();
         if (state.sortedEvents.length === 0) {
           setEmptyEventLog();
           return;
         }
 
+        const currentEventIndex = currentStep ? currentStep.event.__index : null;
         for (const event of state.sortedEvents) {
           const item = document.createElement("li");
           const button = document.createElement("button");
           button.type = "button";
           const nextTick = eventTick(event);
-          button.className = nextTick === tick ? "current" : nextTick > tick ? "future" : "";
-          button.disabled = nextTick === null;
-          button.addEventListener("click", () => jumpToTick(nextTick));
+          const stepIndex = state.stepIndexByEventIndex.get(event.__index);
+          button.className = event.__index === currentEventIndex ? "current" : stepIndex > state.currentTickIndex ? "future" : "";
+          button.disabled = stepIndex === undefined;
+          button.addEventListener("click", () => jumpToEventIndex(event.__index));
 
           const line = document.createElement("span");
           line.className = "event-line";
@@ -2216,7 +2277,9 @@
         getStateSummary: () => ({
           events: state.events.length,
           ticks: state.ticks.length,
-          currentTick: state.ticks[state.currentTickIndex] ?? null,
+          steps: state.steps.length,
+          currentTick: state.steps[state.currentTickIndex]?.tick ?? null,
+          currentStep: state.currentTickIndex,
           selectedUnitId: state.selectedUnitId
         })
       };
